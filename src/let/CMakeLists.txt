@@ -1,4 +1,5 @@
 add_library(liblet
+    eval.cpp
     lexer.cpp
     parser.cpp
     print.cpp

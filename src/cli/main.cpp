@@ -15,13 +15,15 @@ int main(int argc, char** argv) {
         bool show_help            = false;
         bool show_version         = false;
         bool dump                 = false;
+        bool eval                 = false;
         std::string input;
 
         // clang-format off
         auto cli = lyra::cli()
             | lyra::help(show_help)
             | lyra::opt(show_version       )["-v"]["--version"]("Display version info and exit.")
-            | lyra::opt(dump               )["-d"]["--dump"   ]("Dumps the let statement again.")
+            | lyra::opt(dump               )["-d"]["--dump"   ]("Dumps the let program again.")
+            | lyra::opt(eval               )["-e"]["--eval"   ]("Evaluate the let program.")
             | lyra::arg(input,       "file")                   ("Input file.")
             ;
         // clang-format on
@@ -49,17 +51,18 @@ int main(int argc, char** argv) {
         }
 
         fe::Driver driver;
-        let::Ptr<let::Stmt> stmt;
+        let::Ptr<let::Prog> prog;
         if (input == "-") {
             let::Parser parser(driver, std::cin);
-            stmt = parser.parse_stmt();
+            prog = parser.parse_prog();
         } else {
             std::ifstream ifs(input);
             let::Parser parser(driver, ifs, &path);
-            stmt = parser.parse_stmt();
+            prog = parser.parse_prog();
         }
 
-        if (dump) stmt->dump();
+        if (dump) prog->dump();
+        if (eval) prog->eval();
 
         if (auto num = driver.num_errors()) {
             std::cerr << num << " error(s) encountered" << std::endl;

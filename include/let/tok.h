@@ -13,31 +13,22 @@ using fe::Pos;
 using fe::Sym;
 
 // clang-format off
-#define LET_KEY(m)          \
-    m(K_if,     "if")       \
-    m(K_let,    "let")      \
-    m(K_return, "return")
+#define LET_KEY(m)      \
+    m(K_let,   "let")   \
+    m(K_print, "print") \
 
-#define LET_VAL(m)                      \
-    m(V_int,        "<interger value>") \
-    m(V_sym,        "<identifier>")
+#define LET_VAL(m)                        \
+    m(V_int,        "<interger literal>") \
+    m(V_sym,        "<identifier>")       \
 
-#define LET_TOK(m)                      \
-    m(EoF,          "<end of file>")    \
-    /* delimiter */                     \
-    m(D_paren_l,    "(")                \
-    m(D_paren_r,    ")")                \
-    /* further tokens */                \
-    m(T_ass,        "=")                \
-    m(T_ne,         "<>")               \
-    m(T_l,          "<")                \
-    m(T_g,          ">")                \
-    m(T_le,         "<=")               \
-    m(T_ge,         ">=")               \
-    m(T_dot,        ".")                \
-    m(T_colon,      ":")                \
-    m(T_comma,      ",")                \
-    m(T_semicolon,  ";")
+#define LET_TOK(m)                   \
+    m(EoF,          "<end of file>") \
+    /* delimiter */                  \
+    m(D_paren_l,    "(")             \
+    m(D_paren_r,    ")")             \
+    /* further tokens */             \
+    m(T_ass,        "=")             \
+    m(T_semicolon,  ";")             \
 
 #define CODE(t, str) + 1
 constexpr auto Num_Keys = 0 LET_KEY(CODE);
@@ -47,7 +38,7 @@ constexpr auto Num_Keys = 0 LET_KEY(CODE);
     m(O_add, "+", Add) \
     m(O_sub, "-", Add) \
     m(O_mul, "*", Mul) \
-    m(O_div, "/", Mul)
+    m(O_div, "/", Mul) \
 
 class Tok {
 public:
@@ -65,7 +56,8 @@ public:
     // clang-format on
 
     enum class Prec {
-        Bot,
+        Error,
+        Bottom,
         Add,
         Mul,
         Unary,
@@ -96,10 +88,10 @@ public:
     uint64_t u64() const { return u64_; }
 
     static std::string_view str(Tok::Tag);
-    static std::optional<Prec> un_prec(Tok::Tag);
-    static std::optional<Prec> bin_prec(Tok::Tag);
+    static Prec un_prec(Tok::Tag);
+    static Prec bin_prec(Tok::Tag);
 
-    friend std::ostream& operator<<(std::ostream&, Tok::Tag);
+    friend std::ostream& operator<<(std::ostream&, Tag);
     friend std::ostream& operator<<(std::ostream&, Tok);
 
 private:
@@ -113,4 +105,5 @@ private:
 
 } // namespace let
 
-template<> struct std::formatter<let::Tok> : fe::ostream_formatter {};
+template<>
+struct std::formatter<let::Tok> : fe::ostream_formatter {};

@@ -15,12 +15,13 @@ template<class T>
 using Ptr = std::unique_ptr<const T>;
 template<class T>
 using Ptrs = std::deque<Ptr<T>>;
-using Syms = std::deque<Sym>;
 
 template<class T, class... Args>
 Ptr<T> mk(Args&&... args) {
     return std::make_unique<T>(std::forward<Args>(args)...);
 }
+
+using Env = fe::SymMap<uint64_t>;
 
 /// Base class for all @p Expr%essions.
 class Node : public fe::RuntimeCast<Node> {
@@ -48,6 +49,7 @@ class Expr : public Node {
 public:
     Expr(Loc loc)
         : Node(loc) {}
+    virtual uint64_t eval(Env&) const = 0;
 };
 
 class LitExpr : public Expr {
@@ -57,7 +59,9 @@ public:
         , u64_(tok.u64()) {}
 
     uint64_t u64() const { return u64_; }
-    virtual std::ostream& stream(std::ostream&) const;
+
+    std::ostream& stream(std::ostream&) const override;
+    uint64_t eval(Env&) const override;
 
 private:
     uint64_t u64_;
@@ -72,21 +76,24 @@ public:
     Sym sym() const { return sym_; }
 
     std::ostream& stream(std::ostream&) const override;
+    uint64_t eval(Env&) const override;
 
 private:
     Sym sym_;
 };
 
-class UnExpr : public Expr {
+class UnaryExpr : public Expr {
 public:
-    UnExpr(Loc loc, Tok::Tag tag, Ptr<Expr>&& rhs)
+    UnaryExpr(Loc loc, Tok::Tag tag, Ptr<Expr>&& rhs)
         : Expr(loc)
         , tag_(tag)
         , rhs_(std::move(rhs)) {}
 
     Tok::Tag tag() const { return tag_; }
     const Expr* rhs() const { return rhs_.get(); }
+
     std::ostream& stream(std::ostream&) const override;
+    uint64_t eval(Env&) const override;
 
 private:
     Tok::Tag tag_;
@@ -104,7 +111,9 @@ public:
     const Expr* lhs() const { return lhs_.get(); }
     Tok::Tag tag() const { return tag_; }
     const Expr* rhs() const { return rhs_.get(); }
+
     std::ostream& stream(std::ostream&) const override;
+    uint64_t eval(Env&) const override;
 
 private:
     Ptr<Expr> lhs_;
@@ -119,6 +128,7 @@ public:
         : Expr(loc) {}
 
     std::ostream& stream(std::ostream&) const override;
+    uint64_t eval(Env&) const override;
 };
 
 /*
@@ -130,6 +140,8 @@ class Stmt : public Node {
 public:
     Stmt(Loc loc)
         : Node(loc) {}
+
+    virtual void eval(Env&) const = 0;
 };
 
 class LetStmt : public Stmt {
@@ -141,11 +153,50 @@ public:
 
     Sym sym() const { return sym_; }
     const Expr* init() const { return init_.get(); }
+
     std::ostream& stream(std::ostream&) const override;
+    void eval(Env&) const override;
 
 private:
     Sym sym_;
     Ptr<Expr> init_;
+};
+
+class PrintStmt : public Stmt {
+public:
+    PrintStmt(Loc loc, Ptr<Expr>&& expr)
+        : Stmt(loc)
+        , expr_(std::move(expr)) {}
+
+    Sym sym() const { return sym_; }
+    const Expr* expr() const { return expr_.get(); }
+
+    std::ostream& stream(std::ostream&) const override;
+    void eval(Env&) const override;
+
+private:
+    Sym sym_;
+    Ptr<Expr> expr_;
+};
+
+/*
+ * Prog
+ */
+
+class Prog : public Node {
+public:
+    Prog(Loc loc, Ptrs<Stmt>&& stmts)
+        : Node(loc)
+        , stmts_(std::move(stmts)) {}
+
+    const Ptrs<Stmt>& stmts() const { return stmts_; }
+
+    std::ostream& stream(std::ostream&) const override;
+    void eval() const;
+
+private:
+    Sym sym_;
+    Ptrs<Stmt> stmts_;
 };
 
 } // namespace let

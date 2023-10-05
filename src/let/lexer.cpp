@@ -8,17 +8,11 @@ using namespace std::literals;
 
 namespace let {
 
-static std::string to_lower(std::string_view sv) {
-    std::string res;
-    for (auto c : sv) res += tolower(c);
-    return res;
-}
-
 Lexer::Lexer(fe::Driver& driver, std::istream& istream, const std::filesystem::path* path)
     : fe::Lexer<1, Lexer>(istream, path)
     , driver_(driver) {
     if (!istream_) throw std::runtime_error("stream is bad");
-#define CODE(t, str) keywords_[driver_.sym(to_lower(str##s))] = Tok::Tag::t;
+#define CODE(t, str) keywords_[driver_.sym(str)] = Tok::Tag::t;
     LET_KEY(CODE)
 #undef CODE
 }
@@ -31,18 +25,7 @@ Tok Lexer::lex() {
         if (accept_if(isspace)) continue;
         if (accept('(')) return {loc_, Tok::Tag::D_paren_l};
         if (accept(')')) return {loc_, Tok::Tag::D_paren_r};
-        if (accept('<')) {
-            if (accept('>')) return {loc_, Tok::Tag::T_ne};
-            if (accept('=')) return {loc_, Tok::Tag::T_le};
-            return {loc_, Tok::Tag::T_l};
-        }
-        if (accept('>')) {
-            if (accept('=')) return {loc_, Tok::Tag::T_ge};
-            return {loc_, Tok::Tag::T_g};
-        }
         if (accept('=')) return {loc_, Tok::Tag::T_ass};
-        if (accept(',')) return {loc_, Tok::Tag::T_comma};
-        if (accept('.')) return {loc_, Tok::Tag::T_dot};
         if (accept(';')) return {loc_, Tok::Tag::T_semicolon};
         if (accept('+')) return {loc_, Tok::Tag::O_add};
         if (accept('-')) return {loc_, Tok::Tag::O_sub};

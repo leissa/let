@@ -1,1 +1,6 @@
 let x = 23 + 4 * 6 - y;
+print x;
+let y = 3;
+print x + y;
+let z = 0;
+print x / z;
