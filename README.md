@@ -82,5 +82,5 @@ All binary operators are [**left** associative](https://en.wikipedia.org/wiki/Op
 
 ## Semantics
 
-All calculuations use 64-bit unsigned integer wrap-around arithmetic.
+All calculations use 64-bit unsigned integer wrap-around arithmetic.
 Division by zero yields zero.
