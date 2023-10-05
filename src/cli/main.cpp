@@ -49,17 +49,17 @@ int main(int argc, char** argv) {
         }
 
         fe::Driver driver;
-        let::Ptr<let::Prog> prog;
+        let::Ptr<let::Stmt> stmt;
         if (input == "-") {
             let::Parser parser(driver, std::cin);
-            prog = parser.parse_prog();
+            stmt = parser.parse_stmt();
         } else {
             std::ifstream ifs(input);
             let::Parser parser(driver, ifs, &path);
-            prog = parser.parse_prog();
+            stmt = parser.parse_stmt();
         }
 
-        if (dump) prog->dump();
+        if (dump) stmt->dump();
 
         if (auto num = driver.num_errors()) {
             std::cerr << num << " error(s) encountered" << std::endl;

@@ -12,15 +12,17 @@ public:
     Parser(fe::Driver&, std::istream&, const std::filesystem::path* = nullptr);
 
     fe::Driver& driver() { return lexer_.driver(); }
-    Ptr<Prog> parse_prog();
     Lexer& lexer() { return lexer_; }
 
+    Ptr<Stmt> parse_stmt();
+
 private:
-    Sym parse_sym(std::string_view ctxt);
+    Sym parse_sym(std::string_view ctxt = {});
+
+    Ptr<Stmt> parse_let_stmt();
 
     Ptr<Expr> parse_expr(std::string_view ctxt, Tok::Prec = Tok::Prec::Bot);
     Ptr<Expr> parse_primary_or_unary_expr(std::string_view ctxt);
-    Ptr<Expr> parse_id();
 
     template<class F>
     void parse_list(F f, Tok::Tag delim, Tok::Tag sep = Tok::Tag::T_comma) {

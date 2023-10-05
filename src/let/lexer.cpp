@@ -40,7 +40,7 @@ Tok Lexer::lex() {
             if (accept('=')) return {loc_, Tok::Tag::T_ge};
             return {loc_, Tok::Tag::T_g};
         }
-        if (accept('=')) return {loc_, Tok::Tag::T_eq};
+        if (accept('=')) return {loc_, Tok::Tag::T_ass};
         if (accept(',')) return {loc_, Tok::Tag::T_comma};
         if (accept('.')) return {loc_, Tok::Tag::T_dot};
         if (accept(';')) return {loc_, Tok::Tag::T_semicolon};

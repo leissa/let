@@ -20,7 +20,7 @@ using fe::Sym;
 
 #define LET_VAL(m)                      \
     m(V_int,        "<interger value>") \
-    m(V_id,         "<identifier>")
+    m(V_sym,        "<identifier>")
 
 #define LET_TOK(m)                      \
     m(EoF,          "<end of file>")    \
@@ -28,7 +28,7 @@ using fe::Sym;
     m(D_paren_l,    "(")                \
     m(D_paren_r,    ")")                \
     /* further tokens */                \
-    m(T_eq,         "=")                \
+    m(T_ass,        "=")                \
     m(T_ne,         "<>")               \
     m(T_l,          "<")                \
     m(T_g,          ">")                \
@@ -77,7 +77,7 @@ public:
         , tag_(tag) {}
     Tok(Loc loc, Sym sym)
         : loc_(loc)
-        , tag_(Tag::V_id)
+        , tag_(Tag::V_sym)
         , sym_(sym) {}
     Tok(Loc loc, uint64_t u64)
         : loc_(loc)
@@ -90,7 +90,7 @@ public:
     bool isa_key() const { return (int)tag() < Num_Keys; }
 
     Sym sym() const {
-        assert(isa(Tag::V_id));
+        assert(isa(Tag::V_sym));
         return sym_;
     }
     uint64_t u64() const { return u64_; }
