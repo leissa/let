@@ -1,6 +1,6 @@
-let x = 23 + 4 * 6 - y;
+let x = 23 + 4 * 6;
 print x;
-let y = 3;
+let y = 3 * x;
 print x + y;
 let z = 0;
-print x / z;
+print x / z; // div by zero is o

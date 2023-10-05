@@ -6,7 +6,7 @@ namespace let {
 
 // stream
 
-void Node::dump() const { stream(std::cout) << std::endl; }
+void Node::dump() const { stream(std::cout); }
 
 /*
  * Expr
