@@ -1,5 +1,7 @@
 # Let
 
+A simple demo language that builds upon [fe](https://leissa.github.io/fe/).
+
 ## Usage
 
 ```
@@ -16,11 +18,6 @@ OPTIONS, ARGUMENTS:
   <file>                  Input file.
 
 Use "-" as <file> to output to stdout.
-```
-
-Invoke the interpreter like so:
-```sh
-./build/bin/let test/test.let -e
 ```
 
 ## Building
@@ -42,27 +39,27 @@ cmake --build build -j $(nproc)
 ```
 For a `Release` build simply use `-DCMAKE_BUILD_TYPE=Release`.
 
-Test:
+Invoke the interpreter like so:
 ```sh
- ./build/bin/let -d test/test.sql
- ```
+./build/bin/let test/test.let -e
+```
 
 ## Grammar
 
 ```ebnf
-p = s ... s EOF    (* program *)
+p = s ... s EOF         (* program *)
   ;
 
-s = ';'                     (* empty statement *)
-  | 'let' ID '=' e ';'      (* let statement *)
-  | 'print' e;              (* print statement *)
+s = ';'                 (* empty statement *)
+  | 'let' ID '=' e ';'  (* let statement *)
+  | 'print' e ';'       (* print statement *)
   ;
 
-e = LIT                     (* literal expression *)
-  | ID                      (* identifier expression *)
-  | '(' e ')'               (* parenthesized expression *)
-  | OP1 e                   (* unary expression *)
-  | e OP2 e                 (* binary expression *)
+e = LIT                 (* literal expression *)
+  | ID                  (* identifier expression *)
+  | '(' e ')'           (* parenthesized expression *)
+  | OP1 e               (* unary expression *)
+  | e OP2 e             (* binary expression *)
   ;
 ```
 where
@@ -82,3 +79,8 @@ Ambiguities in the expression productions are resolved according to the operator
 | `+`, `-`                        | addition, subtraction    |
 
 All binary operators are [**left** associative](https://en.wikipedia.org/wiki/Operator_associativity).
+
+## Semantics
+
+All calculuations use 64-bit unsigned integer wrap-around arithmetic.
+Division by zero yields zero.
