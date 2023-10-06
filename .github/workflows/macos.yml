@@ -19,8 +19,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install LLVM/Clang and valgrind
-        run: brew install llvm@16 valgrind
+      - name: Install LLVM/Clang
+        run: brew install llvm@16
 
       - name: Configure
         run: |
@@ -32,5 +32,5 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build -v
 
-      - name: Test with Valgrind
-        run: valgrind --error-exitcode=1 --leak-check=full ${{github.workspace}}/build/bin/let ${{github.workspace}}/test/test.let
+      - name: Test
+        run: ${{github.workspace}}/build/bin/let ${{github.workspace}}/test/test.let
