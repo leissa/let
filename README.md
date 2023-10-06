@@ -1,5 +1,9 @@
 # Let
 
+![linux](https://img.shields.io/github/actions/workflow/status/leissa/let/linux.yml?logo=linux&logoColor=white&label=linux&link=https%3A%2F%2Fgithub.com%2Fleissa%2Ffe%2Factions%2Fworkflows%2Flinux.yml)
+![macos](https://img.shields.io/github/actions/workflow/status/leissa/let/macos.yml?logo=apple&logoColor=white&label=macos&link=https%3A%2F%2Fgithub.com%2Fleissa%2Ffe%2Factions%2Fworkflows%2Fmacos.yml)
+![windows](https://img.shields.io/github/actions/workflow/status/leissa/let/windows.yml?logo=windows&logoColor=white&label=windows&link=https%3A%2F%2Fgithub.com%2Fleissa%2Ffe%2Factions%2Fworkflows%2Fwindows.yml)
+
 A simple demo language that builds upon [FE](https://leissa.github.io/fe/).
 
 ## Usage
