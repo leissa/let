@@ -50,15 +50,15 @@ int main(int argc, char** argv) {
             return EXIT_FAILURE;
         }
 
-        fe::Driver driver;
-        let::Ptr<let::Prog> prog;
+        let::Driver driver;
+        let::AST<let::Prog> prog;
         if (input == "-") {
-            let::Parser parser(driver, std::cin);
-            prog = parser.parse_prog();
+            auto parser = let::Parser(driver, std::cin);
+            prog        = parser.parse_prog();
         } else {
-            std::ifstream ifs(input);
-            let::Parser parser(driver, ifs, &path);
-            prog = parser.parse_prog();
+            auto ifs    = std::ifstream(input);
+            auto parser = let::Parser(driver, ifs, &path);
+            prog        = parser.parse_prog();
         }
 
         if (dump) prog->dump();

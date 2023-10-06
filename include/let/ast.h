@@ -12,18 +12,6 @@
 
 namespace let {
 
-template<class T>
-using Ptr = std::unique_ptr<const T>;
-template<class T>
-using Ptrs = std::deque<Ptr<T>>;
-
-template<class T, class... Args>
-Ptr<T> mk(Args&&... args) {
-    return std::make_unique<T>(std::forward<Args>(args)...);
-}
-
-using Env = fe::SymMap<uint64_t>;
-
 /// Base class for all @p Expr%essions.
 class Node : public fe::RuntimeCast<Node> {
 public:
@@ -40,6 +28,12 @@ public:
 private:
     Loc loc_;
 };
+
+template<class T>
+using AST = fe::Arena<>::Ptr<const T>;
+template<class T>
+using ASTs = std::deque<AST<T>>;
+using Env  = fe::SymMap<uint64_t>;
 
 /*
  * Expr
@@ -85,7 +79,7 @@ private:
 
 class UnaryExpr : public Expr {
 public:
-    UnaryExpr(Loc loc, Tok::Tag tag, Ptr<Expr>&& rhs)
+    UnaryExpr(Loc loc, Tok::Tag tag, AST<Expr>&& rhs)
         : Expr(loc)
         , tag_(tag)
         , rhs_(std::move(rhs)) {}
@@ -98,12 +92,12 @@ public:
 
 private:
     Tok::Tag tag_;
-    Ptr<Expr> rhs_;
+    AST<Expr> rhs_;
 };
 
 class BinExpr : public Expr {
 public:
-    BinExpr(Loc loc, Ptr<Expr>&& lhs, Tok::Tag tag, Ptr<Expr>&& rhs)
+    BinExpr(Loc loc, AST<Expr>&& lhs, Tok::Tag tag, AST<Expr>&& rhs)
         : Expr(loc)
         , lhs_(std::move(lhs))
         , tag_(tag)
@@ -117,9 +111,9 @@ public:
     uint64_t eval(Env&) const override;
 
 private:
-    Ptr<Expr> lhs_;
+    AST<Expr> lhs_;
     Tok::Tag tag_;
-    Ptr<Expr> rhs_;
+    AST<Expr> rhs_;
 };
 
 /// Just a dummy that does nothing and will only be constructed during parse errors.
@@ -147,7 +141,7 @@ public:
 
 class LetStmt : public Stmt {
 public:
-    LetStmt(Loc loc, Sym sym, Ptr<Expr>&& init)
+    LetStmt(Loc loc, Sym sym, AST<Expr>&& init)
         : Stmt(loc)
         , sym_(sym)
         , init_(std::move(init)) {}
@@ -160,12 +154,12 @@ public:
 
 private:
     Sym sym_;
-    Ptr<Expr> init_;
+    AST<Expr> init_;
 };
 
 class PrintStmt : public Stmt {
 public:
-    PrintStmt(Loc loc, Ptr<Expr>&& expr)
+    PrintStmt(Loc loc, AST<Expr>&& expr)
         : Stmt(loc)
         , expr_(std::move(expr)) {}
 
@@ -177,7 +171,7 @@ public:
 
 private:
     Sym sym_;
-    Ptr<Expr> expr_;
+    AST<Expr> expr_;
 };
 
 /*
@@ -186,18 +180,18 @@ private:
 
 class Prog : public Node {
 public:
-    Prog(Loc loc, Ptrs<Stmt>&& stmts)
+    Prog(Loc loc, ASTs<Stmt>&& stmts)
         : Node(loc)
         , stmts_(std::move(stmts)) {}
 
-    const Ptrs<Stmt>& stmts() const { return stmts_; }
+    const ASTs<Stmt>& stmts() const { return stmts_; }
 
     std::ostream& stream(std::ostream&) const override;
     void eval() const;
 
 private:
     Sym sym_;
-    Ptrs<Stmt> stmts_;
+    ASTs<Stmt> stmts_;
 };
 
 } // namespace let
