@@ -1,6 +1,6 @@
 # Let
 
-A simple demo language that builds upon [fe](https://leissa.github.io/fe/).
+A simple demo language that builds upon [FE](https://leissa.github.io/fe/).
 
 ## Usage
 
