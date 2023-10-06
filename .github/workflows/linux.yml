@@ -33,4 +33,4 @@ jobs:
         run: cmake --build ${{github.workspace}}/build -v
 
       - name: Test with Valgrind
-        run: valgrind --error-exitcode=1 --leak-check=full ${{github.workspace}}/build/bin/fe-test ${{github.workspace}}/test/test.let
+        run: valgrind --error-exitcode=1 --leak-check=full ${{github.workspace}}/build/bin/let ${{github.workspace}}/test/test.let
