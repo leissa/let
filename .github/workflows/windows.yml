@@ -35,4 +35,4 @@ jobs:
 
       - name: Test
         shell: cmd
-        run: ${{github.workspace}}/build/bin/let.exe ${{github.workspace}}/build/test/test.let
+        run: ${{github.workspace}}/build/bin/let.exe ${{github.workspace}}/test/test.let

@@ -19,8 +19,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install LLVM and Clang
-        run: brew install llvm@16
+      - name: Install LLVM/Clang and valgrind
+        run: brew install llvm@16 valgrind
 
       - name: Configure
         run: |
