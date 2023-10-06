@@ -1,0 +1,36 @@
+name: macos
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build and test ${{matrix.build-type}} mode
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+
+    steps:
+      - name: Clone recursively
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install LLVM and Clang
+        run: brew install llvm@16
+
+      - name: Configure
+        run: |
+          CXX="/usr/local/opt/llvm/bin/clang++" \
+          CXXFLAGS="-stdlib=libc++ -fexperimental-library" \
+          LDFLAGS="-L/usr/local/opt/llvm/lib/c++ -Wl,-rpath,/usr/local/opt/llvm/lib/c++" \
+          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build -v
+
+      - name: Test with Valgrind
+        run: valgrind --error-exitcode=1 --leak-check=full ${{github.workspace}}/build/bin/let ${{github.workspace}}/test/test.let
