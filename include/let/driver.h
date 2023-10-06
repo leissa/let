@@ -13,7 +13,7 @@ public:
     }
 
 private:
-    fe::Arena<> arena_;
+    fe::Arena arena_;
 };
 
 } // namespace let
