@@ -22,16 +22,15 @@ int main(int argc, char** argv) {
                                     "  -d, --dump              Dumps the let program again.\n"
                                     "  -e, --eval              Evaluate the let program.\n"
                                     "  <file>                  Input file.\n";
-
-        bool dump = false;
-        bool eval = false;
+        bool dump                 = false;
+        bool eval                 = false;
         std::string input;
 
         for (int i = 1; i < argc; ++i) {
             if (argv[i] == "-v"s || argv[i] == "--version"s) {
                 std::cout << version;
                 return EXIT_SUCCESS;
-            } else if (argv[i] == "-h"s || argv[i] == "--help"s) {
+            } else if (argv[i] == "-?"s || argv[i] == "-h"s || argv[i] == "--help"s) {
                 std::cerr << usage;
                 return EXIT_SUCCESS;
             } else if (argv[i] == "-d"s || argv[i] == "--dump"s) {
