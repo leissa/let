@@ -20,8 +20,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-option(BUILD_SHARED_LIBS "Build shared libraries." ON)
-
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}; shared libs: ${BUILD_SHARED_LIBS}")
 
 if(WIN32)
@@ -34,8 +32,7 @@ set(FE_ABSL OFF)
 if(FE_ABSL)
     set(ABSL_PROPAGATE_CXX_STD ON)
     set(ABSL_ENABLE_INSTALL ON)
-    add_subdirectory(external/abseil-cpp EXCLUDE_FROM_ALL)
+    find_package(abseil)
 endif()
-add_subdirectory(external/lyra EXCLUDE_FROM_ALL)
 add_subdirectory(external/fe)
 add_subdirectory(src)

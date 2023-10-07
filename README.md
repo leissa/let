@@ -72,6 +72,10 @@ where
 * `OP1` is one of: `+`, `-`
 * `OP2` is one of: `*`, `+`, `-`, `/`
 
+In addition, Let supports
+* `/* C-style */` and
+* `// C++-sytle` comments.
+
 ### Precedence
 
 Ambiguities in the expression productions are resolved according to the operator precedence that is summarized in the following table (strongest binding first):
