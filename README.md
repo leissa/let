@@ -9,7 +9,7 @@ A simple demo language that builds upon [FE](https://leissa.github.io/fe/).
 ## Usage
 
 ```
-SAGE:
+USAGE:
   let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval] [<file>]
 
 Display usage information.
