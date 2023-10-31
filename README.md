@@ -76,6 +76,8 @@ In addition, Let supports
 * `/* C-style */` and
 * `// C++-sytle` comments.
 
+For the sake of the demo, Let is **[case-insensitive](https://en.wikipedia.org/wiki/Case_sensitivity#In_programming_languages)**.
+
 ### Precedence
 
 Ambiguities in the expression productions are resolved according to the operator precedence that is summarized in the following table (strongest binding first):
