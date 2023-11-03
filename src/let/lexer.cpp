@@ -19,7 +19,7 @@ Lexer::Lexer(Driver& driver, std::istream& istream, const std::filesystem::path*
 
 Tok Lexer::lex() {
     while (true) {
-        begin();
+        start();
 
         if (accept(fe::utf8::EoF)) return {loc_, Tok::Tag::EoF};
         if (accept_if(isspace)) continue;
