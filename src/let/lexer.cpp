@@ -24,7 +24,7 @@ Tok Lexer::lex() {
         start();
 
         if (accept(utf8::EoF)) return {loc_, Tok::Tag::EoF};
-        if (accept_if(utf8::isspace)) continue;
+        if (accept(utf8::isspace)) continue;
         if (accept('(')) return {loc_, Tok::Tag::D_paren_l};
         if (accept(')')) return {loc_, Tok::Tag::D_paren_r};
         if (accept('=')) return {loc_, Tok::Tag::T_ass};
@@ -46,14 +46,14 @@ Tok Lexer::lex() {
         }
 
         // integer value
-        if (accept_if(utf8::isdigit)) {
-            while (accept_if(utf8::isdigit)) {}
+        if (accept(utf8::isdigit)) {
+            while (accept(utf8::isdigit)) {}
             return {loc_, std::strtoull(str_.c_str(), nullptr, 10)};
         }
 
         // lex identifier or keyword
-        if (accept_if<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c); })) {
-            while (accept_if<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c) || utf8::isdigit(c); })) {}
+        if (accept<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c); })) {
+            while (accept<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c) || utf8::isdigit(c); })) {}
             auto sym = driver_.sym(str_);
             if (auto i = keywords_.find(sym); i != keywords_.end()) return {loc_, i->second}; // keyword
             return {loc_, sym};                                                               // identifier
@@ -64,7 +64,7 @@ Tok Lexer::lex() {
             continue;
         }
 
-        driver().err({loc_.path, peek_}, "invalid input char: '{}'", fe::Char32(ahead()));
+        driver().err({loc_.path, peek_}, "invalid input char: '{}'", utf8::Char32(ahead()));
         next();
     }
 }
