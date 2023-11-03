@@ -8,6 +8,8 @@ using namespace std::literals;
 
 namespace let {
 
+namespace utf8 = fe::utf8;
+
 Lexer::Lexer(Driver& driver, std::istream& istream, const std::filesystem::path* path)
     : fe::Lexer<1, Lexer>(istream, path)
     , driver_(driver) {
@@ -21,8 +23,8 @@ Tok Lexer::lex() {
     while (true) {
         start();
 
-        if (accept(fe::utf8::EoF)) return {loc_, Tok::Tag::EoF};
-        if (accept_if(isspace)) continue;
+        if (accept(utf8::EoF)) return {loc_, Tok::Tag::EoF};
+        if (accept_if(utf8::isspace)) continue;
         if (accept('(')) return {loc_, Tok::Tag::D_paren_l};
         if (accept(')')) return {loc_, Tok::Tag::D_paren_r};
         if (accept('=')) return {loc_, Tok::Tag::T_ass};
@@ -36,7 +38,7 @@ Tok Lexer::lex() {
                 continue;
             }
             if (accept('/')) {
-                while (ahead() != fe::utf8::EoF && ahead() != '\n') next();
+                while (ahead() != utf8::EoF && ahead() != '\n') next();
                 continue;
             }
 
@@ -44,28 +46,33 @@ Tok Lexer::lex() {
         }
 
         // integer value
-        if (accept_if(isdigit)) {
-            while (accept_if(isdigit)) {}
+        if (accept_if(utf8::isdigit)) {
+            while (accept_if(utf8::isdigit)) {}
             return {loc_, std::strtoull(str_.c_str(), nullptr, 10)};
         }
 
         // lex identifier or keyword
-        if (accept_if<Append::Lower>([](int i) { return i == '_' || isalpha(i); })) {
-            while (accept_if<Append::Lower>([](int i) { return i == '_' || isalpha(i) || isdigit(i); })) {}
+        if (accept_if<Append::Lower>([](int i) { return i == '_' || utf8::isalpha(i); })) {
+            while (accept_if<Append::Lower>([](int i) { return i == '_' || utf8::isalpha(i) || utf8::isdigit(i); })) {}
             auto sym = driver_.sym(str_);
             if (auto i = keywords_.find(sym); i != keywords_.end()) return {loc_, i->second}; // keyword
             return {loc_, sym};                                                               // identifier
         }
 
-        driver_.err({loc_.path, peek_}, "invalid input char: '{}'", (char)ahead());
+        if (accept(utf8::Null)) {
+            driver().err(loc_, "invalid UTF-8 character");
+            continue;
+        }
+
+        driver().err({loc_.path, peek_}, "invalid input char: '{}'", fe::Char32(ahead()));
         next();
     }
 }
 
 void Lexer::eat_comments() {
     while (true) {
-        while (ahead() != fe::utf8::EoF && ahead() != '*') next();
-        if (ahead() == fe::utf8::EoF) {
+        while (ahead() != utf8::EoF && ahead() != '*') next();
+        if (ahead() == utf8::EoF) {
             driver_.err(loc_, "non-terminated multiline comment");
             return;
         }

@@ -1,0 +1,2 @@
+let Î›x = 23;
+let aÀÿ = 42; // two bytes infront of y are invalid UTF-8
