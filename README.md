@@ -37,7 +37,6 @@ git clone --recurse-submodules https://github.com/leissa/let.git
 Then, build with:
 ```sh
 cd let
-mkdir build
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j $(nproc)
 ```
