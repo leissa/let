@@ -34,5 +34,30 @@ if(FE_ABSL)
     set(ABSL_ENABLE_INSTALL ON)
     find_package(abseil)
 endif()
+
 add_subdirectory(external/fe)
-add_subdirectory(src)
+
+add_executable(let)
+target_sources(let
+    PRIVATE
+        src/main.cpp
+        src/let/eval.cpp
+        src/let/lexer.cpp
+        src/let/parser.cpp
+        src/let/stream.cpp
+        src/let/tok.cpp
+        include/let/ast.h
+        include/let/driver.h
+        include/let/lexer.h
+        include/let/tok.h
+)
+target_link_libraries(let PRIVATE fe)
+target_include_directories(let
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+target_compile_features(let PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
+if (MSVC AND BUILD_SHARED_LIBS AND FE_ABSL)
+    target_compile_definitions(liblet PUBLIC ABSL_CONSUME_DLL)
+endif()

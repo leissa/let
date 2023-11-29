@@ -44,6 +44,7 @@ class Tok {
 public:
     // clang-format off
     enum class Tag {
+        Nil,
 #define CODE(t, _) t,
         LET_KEY(CODE)
         LET_VAL(CODE)
@@ -80,6 +81,7 @@ public:
     Tag tag() const { return tag_; }
     bool isa(Tag tag) const { return tag == tag_; }
     bool isa_key() const { return (int)tag() < Num_Keys; }
+    explicit operator bool() const { return tag_ != Tag::Nil; }
 
     Sym sym() const {
         assert(isa(Tag::V_sym));
@@ -96,7 +98,7 @@ public:
 
 private:
     Loc loc_;
-    Tag tag_;
+    Tag tag_ = Tag::Nil;
     union {
         Sym sym_;
         uint64_t u64_;
