@@ -26,11 +26,9 @@ private:
     Loc loc_;
 };
 
-template<class T>
-using AST = fe::Arena::Ptr<const T>;
-template<class T>
-using ASTs = std::deque<AST<T>>;
-using Env  = fe::SymMap<uint64_t>;
+template<class T> using AST  = fe::Arena::Ptr<const T>;
+template<class T> using ASTs = std::deque<AST<T>>;
+using Env                    = fe::SymMap<uint64_t>;
 
 /*
  * Expr
