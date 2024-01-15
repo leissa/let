@@ -1,10 +1,7 @@
 #pragma once
 
 #include <deque>
-#include <memory>
 #include <ostream>
-#include <unordered_set>
-#include <variant>
 
 #include <fe/cast.h>
 

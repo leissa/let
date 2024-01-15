@@ -1,4 +1,5 @@
-#include "fe/assert.h"
+#include <fe/assert.h>
+
 #include "let/ast.h"
 
 namespace let {
