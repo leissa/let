@@ -41,7 +41,7 @@ AST<Expr> Parser::parse_expr(std::string_view ctxt, Tok::Prec curr_prec) {
 
     while (true) {
         auto prec = Tok::bin_prec(ahead().tag());
-        if (prec < curr_prec) break;
+        if (prec <= curr_prec) break;
         auto op  = lex().tag();
         auto rhs = parse_expr("right-hand side of binary expression", prec);
         lhs      = ast<BinExpr>(track, std::move(lhs), op, std::move(rhs));
