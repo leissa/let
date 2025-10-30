@@ -71,7 +71,7 @@ AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
 
     if (!ctxt.empty()) {
         err("primary or unary expression", ctxt);
-        return ast<ErrExpr>(prev_);
+        return ast<ErrExpr>(curr_);
     }
 
     fe::unreachable();
