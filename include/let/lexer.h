@@ -3,7 +3,6 @@
 #include <cassert>
 
 #include <istream>
-#include <unordered_map>
 
 #include <fe/lexer.h>
 

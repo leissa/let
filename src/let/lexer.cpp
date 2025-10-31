@@ -1,7 +1,5 @@
 #include "let/lexer.h"
 
-#include <ranges>
-
 #include <fe/loc.cpp.h>
 
 using namespace std::literals;
@@ -38,7 +36,8 @@ Tok Lexer::lex() {
                 continue;
             }
             if (accept('/')) {
-                while (ahead() != utf8::EoF && ahead() != '\n') next();
+                while (ahead() != utf8::EoF && ahead() != '\n')
+                    next();
                 continue;
             }
 
@@ -53,7 +52,8 @@ Tok Lexer::lex() {
 
         // lex identifier or keyword
         if (accept<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c); })) {
-            while (accept<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c) || utf8::isdigit(c); })) {}
+            while (accept<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c) || utf8::isdigit(c); })) {
+            }
             auto sym = driver_.sym(str_);
             if (auto i = keywords_.find(sym); i != keywords_.end()) return {loc_, i->second}; // keyword
             return {loc_, sym};                                                               // identifier
@@ -71,7 +71,8 @@ Tok Lexer::lex() {
 
 void Lexer::eat_comments() {
     while (true) {
-        while (ahead() != utf8::EoF && ahead() != '*') next();
+        while (ahead() != utf8::EoF && ahead() != '*')
+            next();
         if (ahead() == utf8::EoF) {
             driver_.err(loc_, "non-terminated multiline comment");
             return;
