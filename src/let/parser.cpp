@@ -86,7 +86,7 @@ AST<Stmt> Parser::parse_let_stmt() {
     auto sym = parse_sym("name of a let-statement");
     expect(Tag::T_ass, "let-statement");
     auto init = parse_expr("initialization expression of a let-statement");
-    expect(Tag::T_semicolon, "return-statement");
+    expect(Tag::T_semicolon, "let-statement");
     return ast<LetStmt>(track, sym, std::move(init));
 }
 
