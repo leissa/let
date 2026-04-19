@@ -59,7 +59,7 @@ Tok Lexer::lex() {
             return {loc_, sym};                                                               // identifier
         }
 
-        if (accept(utf8::Null)) {
+        if (accept(utf8::Invalid)) {
             driver().err(loc_, "invalid UTF-8 character");
             continue;
         }
