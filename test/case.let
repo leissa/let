@@ -1,0 +1,4 @@
+LET x = 42;
+PRINT x;
+Let Y = x + 1;
+Print y;

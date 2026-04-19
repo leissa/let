@@ -32,5 +32,8 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build -v
 
+      - name: Test
+        run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let
+
       - name: Test with Valgrind
-        run: valgrind --error-exitcode=1 --leak-check=full ${{github.workspace}}/build/bin/let ${{github.workspace}}/test/test.let
+        run: valgrind --error-exitcode=1 --leak-check=full ${{github.workspace}}/build/bin/let ${{github.workspace}}/test/eval.let -e

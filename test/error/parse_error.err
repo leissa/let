@@ -1,0 +1,4 @@
+# expected identifier, got literal
+error: expected identifier
+# primary expression error
+error: expected primary or unary expression

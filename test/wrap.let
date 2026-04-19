@@ -1,0 +1,5 @@
+// unsigned 64-bit wrap-around
+let x = 0 - 1;
+print x;
+let y = x + 1;
+print y;

@@ -26,4 +26,4 @@ jobs:
         run: cmake --build ${{github.workspace}}/build -v
 
       - name: Test
-        run: ${{github.workspace}}/build/bin/let ${{github.workspace}}/test/test.let
+        run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let

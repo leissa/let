@@ -34,5 +34,5 @@ jobs:
           cmake --build ${{github.workspace}}/build -v
 
       - name: Test
-        shell: cmd
-        run: ${{github.workspace}}/build/bin/let.exe ${{github.workspace}}/test/test.let
+        shell: bash
+        run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let.exe
