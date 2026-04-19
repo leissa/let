@@ -67,6 +67,7 @@ for letf in test/error/*.let; do
     fi
     ok=true
     while IFS= read -r pattern; do
+        pattern="${pattern%$'\r'}"
         [[ -z "$pattern" || "$pattern" == \#* ]] && continue
         if ! grep -qF "$pattern" "$stderr_tmp"; then
             red "FAIL: $base (missing pattern: $pattern)"
