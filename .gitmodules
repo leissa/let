@@ -2,5 +2,5 @@
 	path = external/lyra
 	url = git@github.com:bfgroup/Lyra.git
 [submodule "external/fe"]
-	path = external/fe
+	path = submodules/fe
 	url = ../fe.git

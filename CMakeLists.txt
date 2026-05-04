@@ -35,7 +35,7 @@ if(FE_ABSL)
     find_package(abseil)
 endif()
 
-add_subdirectory(external/fe)
+add_subdirectory(submodules/fe)
 
 add_executable(let)
 target_sources(let
