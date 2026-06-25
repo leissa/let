@@ -10,7 +10,7 @@ using namespace std::literals;
 
 int main(int argc, char** argv) {
     try {
-        static const auto version = "let 0.1\n";
+        static const auto version = "let " LET_VERSION "\n";
         static const auto usage   = "USAGE:\n"
                                     "  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval] [<file>]\n"
                                     "\n"

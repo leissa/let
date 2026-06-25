@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
-project(Let)
+project(Let VERSION 0.9.2)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type (default Debug)" FORCE)
@@ -50,6 +50,7 @@ target_sources(let
         include/let/tok.h
 )
 target_link_libraries(let PRIVATE fe)
+target_compile_definitions(let PRIVATE LET_VERSION="${PROJECT_VERSION}")
 target_include_directories(let
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
