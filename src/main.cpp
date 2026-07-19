@@ -53,12 +53,13 @@ int main(int argc, char** argv) {
         auto prog   = parser.parse_prog();
 
         if (dump) prog->dump();
-        if (eval) prog->eval();
 
         if (auto num = driver.num_errors()) {
             std::cerr << num << " error(s) encountered" << std::endl;
             return EXIT_FAILURE;
         }
+
+        if (eval) prog->eval(); // only evaluate a well-formed program
     } catch (const std::exception& e) {
         std::cerr << "error: " << e.what() << std::endl;
         return EXIT_FAILURE;

@@ -75,7 +75,9 @@ In addition, Let supports
 * `/* C-style */` and
 * `// C++-sytle` comments.
 
-For the sake of the demo, Let is **[case-insensitive](https://en.wikipedia.org/wiki/Case_sensitivity#In_programming_languages)**.
+For the sake of the demo, Let is **[case-insensitive](https://en.wikipedia.org/wiki/Case_sensitivity#In_programming_languages)**:
+the lexer folds every identifier and keyword to lower case (so `Foo`, `FOO`, and `foo` denote the same name, and `LET`/`Print` are recognized as keywords).
+This deliberately exercises FE's case-normalizing lexer path (`fe::Lexer::accept<Append::Lower>`).
 
 ### Precedence
 
@@ -93,3 +95,4 @@ All binary operators are [**left** associative](https://en.wikipedia.org/wiki/Op
 
 All calculations use 64-bit unsigned integer wrap-around arithmetic.
 Division by zero yields zero.
+Reading an identifier that was never bound by a `let` statement is **not** an error: it evaluates to zero (the name is implicitly bound to `0` on first use).

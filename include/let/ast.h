@@ -158,14 +158,12 @@ public:
         : Stmt(loc)
         , expr_(std::move(expr)) {}
 
-    Sym sym() const { return sym_; }
     const Expr* expr() const { return expr_.get(); }
 
     std::ostream& stream(std::ostream&) const override;
     void eval(Env&) const override;
 
 private:
-    Sym sym_;
     AST<Expr> expr_;
 };
 
@@ -185,7 +183,6 @@ public:
     void eval() const;
 
 private:
-    Sym sym_;
     ASTs<Stmt> stmts_;
 };
 
