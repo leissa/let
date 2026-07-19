@@ -9,14 +9,28 @@ set -euo pipefail
 #   3. tag v<version> and push branch + tag
 #   4. create a GitHub release (FE <version> / Let <version>) with generated notes
 #
-# Usage: scripts/release.sh <version>
+# The script is resumable: if a previous run died half-way (e.g. after tagging but
+# before creating the GitHub release), just run it again with the same version -
+# steps that are already done are skipped.
+#
+# Usage: scripts/release.sh <version> [--yes]
 #   e.g. scripts/release.sh 0.9.3
+#   --yes skips the confirmation prompt (required in non-interactive shells)
 
 die() { echo "error: $*" >&2; exit 1; }
 
-[[ $# -eq 1 ]] || { echo "usage: $0 <version>  (e.g. $0 0.9.3)" >&2; exit 1; }
-ver=$1
-[[ $ver =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "version must look like X.Y.Z, got '$ver'"
+usage() { echo "usage: $0 <version> [--yes]  (e.g. $0 0.9.3)" >&2; exit 1; }
+
+ver= yes=false
+for arg in "$@"; do
+    case $arg in
+        --yes|-y) yes=true ;;
+        -*) usage ;;
+        *) [[ -z $ver ]] || usage; ver=$arg ;;
+    esac
+done
+[[ -n $ver ]] || usage
+[[ $ver =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "version must look like X.Y.Z, got '$ver' (no leading 'v')"
 tag=v$ver
 
 let_dir=$(cd "$(dirname "$0")/.." && pwd)
@@ -31,10 +45,36 @@ check_repo() {
     branch=$(git -C "$dir" rev-parse --abbrev-ref HEAD)
     [[ $branch == main ]] || die "$dir is on branch '$branch', expected 'main'"
     [[ -z $(git -C "$dir" status --porcelain) ]] || die "$dir has uncommitted changes"
-    [[ -z $(git -C "$dir" tag -l "$tag") ]] || die "$dir already has tag $tag"
+    # An existing tag is only OK if it points at HEAD (resuming an earlier half-done run).
+    if [[ -n $(git -C "$dir" tag -l "$tag") ]]; then
+        [[ $(git -C "$dir" rev-parse "$tag^{commit}") == $(git -C "$dir" rev-parse HEAD) ]] \
+            || die "$dir already has tag $tag pointing at another commit"
+    fi
     git -C "$dir" fetch origin main
     git -C "$dir" merge-base --is-ancestor origin/main HEAD \
         || die "$dir is behind origin/main, pull first"
+}
+
+# Tag HEAD as $tag; skip if HEAD already carries the tag, die if the tag is elsewhere.
+tag_head() {
+    local dir=$1
+    if [[ -n $(git -C "$dir" tag -l "$tag") ]]; then
+        [[ $(git -C "$dir" rev-parse "$tag^{commit}") == $(git -C "$dir" rev-parse HEAD) ]] \
+            || die "$dir already has tag $tag pointing at another commit"
+        echo "$dir already tagged $tag"
+    else
+        git -C "$dir" tag "$tag"
+    fi
+}
+
+# Create the GitHub release; skip if it already exists.
+create_release() {
+    local repo=$1 title=$2
+    if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
+        echo "release $tag already exists in $repo"
+    else
+        gh release create "$tag" --repo "$repo" --title "$title" --generate-notes
+    fi
 }
 
 # Set the version in CMakeLists.txt; return 0 if the file changed.
@@ -55,8 +95,11 @@ echo
 echo "This will release fe $ver and let $ver:"
 echo "  - commit version bumps, tag $tag, push to origin/main"
 echo "  - create GitHub releases 'FE $ver' and 'Let $ver'"
-read -rp "Continue? [y/N] " answer
-[[ $answer == [yY] ]] || die "aborted"
+if ! $yes; then
+    [[ -t 0 ]] || die "stdin is not a terminal; pass --yes to confirm"
+    read -rp "Continue? [y/N] " answer || die "aborted (no confirmation)"
+    [[ $answer == [yY] ]] || die "aborted"
+fi
 
 ## fe
 
@@ -65,9 +108,9 @@ if bump_version "$fe_dir" fe; then
 else
     echo "fe already at $ver, no bump commit needed"
 fi
-git -C "$fe_dir" tag "$tag"
+tag_head "$fe_dir"
 git -C "$fe_dir" push origin main "$tag"
-gh release create "$tag" --repo leissa/fe --title "FE $ver" --generate-notes
+create_release leissa/fe "FE $ver"
 
 ## let
 
@@ -78,9 +121,9 @@ if [[ -n $(git -C "$let_dir" status --porcelain) ]]; then
 else
     echo "let already at $ver, no bump commit needed"
 fi
-git -C "$let_dir" tag "$tag"
+tag_head "$let_dir"
 git -C "$let_dir" push origin main "$tag"
-gh release create "$tag" --repo leissa/let --title "Let $ver" --generate-notes
+create_release leissa/let "Let $ver"
 
 echo
 echo "released fe $ver and let $ver"
