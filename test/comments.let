@@ -1,0 +1,8 @@
+/* C-style comment */
+let x = /* inline */ 6 * 7;
+print x; // C++-style comment
+/* a comment
+   spanning
+   several lines */
+;;; // empty statements
+print /* one */ x /* two */ + 1;

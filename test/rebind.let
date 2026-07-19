@@ -1,0 +1,7 @@
+// a name may be re-bound; the new binding may refer to the old one
+let x = 1;
+print x;
+let x = x + 2;
+print x;
+let x = x * x;
+print x;

@@ -1,0 +1,6 @@
+// division by zero yields zero
+print 1 / 0;
+print 0 / 0;
+let x = 10;
+print x / (x - 10);
+print x / (x / 100);

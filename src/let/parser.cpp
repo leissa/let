@@ -108,9 +108,10 @@ AST<Prog> Parser::parse_prog() {
     while (true) {
         // clang-format off
         switch (ahead().tag()) {
-            case Tag::K_let:   stmts.emplace_back(parse_let_stmt());   break;
-            case Tag::K_print: stmts.emplace_back(parse_print_stmt()); break;
-            case Tag::EoF:     return ast<Prog>(track, std::move(stmts));
+            case Tag::T_semicolon: lex(); break; // empty statement
+            case Tag::K_let:       stmts.emplace_back(parse_let_stmt());   break;
+            case Tag::K_print:     stmts.emplace_back(parse_print_stmt()); break;
+            case Tag::EoF:         return ast<Prog>(track, std::move(stmts));
             default:
                 auto tok = lex();
                 driver().err(tok.loc(), "expected statement, got '{}' while parsing program", tok);

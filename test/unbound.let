@@ -1,0 +1,5 @@
+// reading an unbound identifier is not an error: it evaluates to 0
+print nope;
+let x = nope + 5;
+print x;
+print x + stillnope;

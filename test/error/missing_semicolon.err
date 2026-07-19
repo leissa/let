@@ -1,0 +1,2 @@
+test/error/missing_semicolon.let:2:1-2:5: error: expected ';', got 'print' while parsing let-statement
+1 error(s) encountered
