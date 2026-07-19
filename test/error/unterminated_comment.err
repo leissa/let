@@ -1,2 +1,2 @@
-test/error/unterminated_comment.let:2:1-3: error: non-terminated multiline comment
+test/error/unterminated_comment.let:2:1-2:27: error: non-terminated multiline comment
 1 error(s) encountered
