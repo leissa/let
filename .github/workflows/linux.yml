@@ -23,11 +23,11 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
-          sudo apt-get install g++-13 valgrind
-          export CXX=g++-13
+          sudo apt-get install g++-14 valgrind
+          export CXX=g++-14
 
       - name: Configure
-        run: CXX=g++-13 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
+        run: CXX=g++-14 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build -v
@@ -52,11 +52,11 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
-          sudo apt-get install g++-13
+          sudo apt-get install g++-14
 
       - name: Configure
         run: >
-          CXX=g++-13 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug
+          CXX=g++-14 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug
           -DCMAKE_CXX_FLAGS="-fsanitize=address,leak,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
           -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,leak,undefined"
 
