@@ -3,24 +3,39 @@ name: macos
 on:
   push:
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
-    name: Build and test ${{matrix.build-type}} mode
+    name: ${{matrix.compiler.name}} ${{matrix.build-type}}
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
+        compiler:
+          - {name: appleclang, cc: clang,  cxx: clang++}
+          - {name: gcc-14,     cc: gcc-14, cxx: g++-14}
         build-type: [Debug, Release]
 
     steps:
       - name: Clone recursively
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Install GCC
+        if: matrix.compiler.name == 'gcc-14'
+        run: brew install gcc@14
+
       - name: Configure
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
+        run: >
+          CC=${{matrix.compiler.cc}} CXX=${{matrix.compiler.cxx}}
+          cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build -v
@@ -32,16 +47,21 @@ jobs:
   sanitize:
     name: ASan+UBSan
     runs-on: macos-latest
+    env:
+      ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:log_path=/tmp/sanitizer
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1:log_path=/tmp/sanitizer
 
     steps:
       - name: Clone recursively
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Configure
         run: >
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug
+          CC=clang CXX=clang++
+          cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
           -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
           -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
 
@@ -50,5 +70,15 @@ jobs:
 
       - name: Test
         run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let
-        env:
-          UBSAN_OPTIONS: print_stacktrace=1
+
+      # See the same step in linux.yml: the error tests exit non-zero by design, so a sanitizer
+      # abort inside one of them is only visible through log_path.
+      - name: Check for sanitizer reports
+        if: always()
+        run: |
+          shopt -s nullglob
+          reports=(/tmp/sanitizer.*)
+          if (( ${#reports[@]} != 0 )); then
+              cat "${reports[@]}"
+              exit 1
+          fi

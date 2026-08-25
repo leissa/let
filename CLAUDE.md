@@ -14,7 +14,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j $(nproc)
 ```
 
-The binary lands in `build/bin/let`. Requires C++23 (CI uses g++-13). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it).
+The binary lands in `build/bin/let`. Requires C++23 (CI builds with gcc-14 and clang on Linux, Apple clang and gcc-14 on macOS, MSVC and clang-cl on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it).
 
 ## Tests
 
@@ -29,7 +29,7 @@ bash test/run_tests.sh build/bin/let
 - If a `.out`/`.err` file is missing, the script **generates** it from the current binary output — that's how you add a test: write the `.let` file, run the script, review the generated golden file.
 - Run a single test manually: `./build/bin/let test/eval.let -e | diff test/eval.out -`.
 
-CI (`.github/workflows/{linux,macos,windows}.yml`) builds Debug+Release, runs the test script, and on Linux also runs the binary under valgrind with `--error-exitcode=1 --leak-check=full` — avoid leaks even in error paths.
+CI (`.github/workflows/{linux,macos,windows}.yml`) builds Debug+Release per compiler and runs the test script. On Linux every test — including the error tests — additionally runs under valgrind (`--leak-check=full`), and a separate job runs the whole suite under ASan+LSan+UBSan (ASan+UBSan on macOS, which has no LSan). Since the error tests exit non-zero by design, both check a log rather than the exit code — so avoid leaks in error paths too.
 
 ## Architecture
 
