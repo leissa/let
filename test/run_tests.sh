@@ -8,7 +8,13 @@ TOTAL=0
 
 stdout_tmp=$(mktemp)
 stderr_tmp=$(mktemp)
-trap 'rm -f "$stdout_tmp" "$stderr_tmp"' EXIT
+actual_tmp=$(mktemp)
+trap 'rm -f "$stdout_tmp" "$stderr_tmp" "$actual_tmp"' EXIT
+
+# On Windows the C runtime opens stdout/stderr in text mode, so the binary emits
+# CRLF while the goldens are checked out with LF (see .gitattributes). Strip the
+# CRs from what the binary produced before comparing or generating goldens.
+strip_cr() { tr -d '\r' < "$1" > "$2"; }
 
 red()   { printf '\033[1;31m%s\033[0m\n' "$*"; }
 green() { printf '\033[1;32m%s\033[0m\n' "$*"; }
@@ -19,7 +25,7 @@ for letf in test/*.let; do
     ((TOTAL++))
 
     if [[ ! -f "$name.out" ]]; then
-        "$LET" "$letf" -e > "$name.out" 2>/dev/null
+        "$LET" "$letf" -e 2>/dev/null | tr -d '\r' > "$name.out"
         green "GENERATED: $name.out"
         ((TOTAL--))
         continue
@@ -28,18 +34,19 @@ for letf in test/*.let; do
     # Eval test: run with -e, expect success, compare stdout
     "$LET" "$letf" -e > "$stdout_tmp" 2> "$stderr_tmp"
     rc=$?
+    strip_cr "$stdout_tmp" "$actual_tmp"
     if [[ $rc -ne 0 ]]; then
         red "FAIL: $base (exit code $rc)"
         sed 's/^/  /' "$stderr_tmp"
         ((FAIL++))
         continue
     fi
-    if diff -u --label expected --label actual "$name.out" "$stdout_tmp" > /dev/null 2>&1; then
+    if diff -u --label expected --label actual "$name.out" "$actual_tmp" > /dev/null 2>&1; then
         green "PASS: $base"
         ((PASS++))
     else
         red "FAIL: $base (output mismatch)"
-        diff -u --label expected --label actual "$name.out" "$stdout_tmp" | sed 's/^/  /'
+        diff -u --label expected --label actual "$name.out" "$actual_tmp" | sed 's/^/  /'
         ((FAIL++))
     fi
 done
@@ -51,7 +58,7 @@ for letf in test/error/*.let; do
     ((TOTAL++))
 
     if [[ ! -f "$name.err" ]]; then
-        "$LET" "$letf" 2> "$name.err" || true
+        "$LET" "$letf" 2>&1 >/dev/null | tr -d '\r' > "$name.err"
         green "GENERATED: $name.err"
         ((TOTAL--))
         continue
@@ -60,6 +67,7 @@ for letf in test/error/*.let; do
     # Error test: expect non-zero exit, check patterns in stderr
     "$LET" "$letf" > "$stdout_tmp" 2> "$stderr_tmp"
     rc=$?
+    strip_cr "$stderr_tmp" "$actual_tmp"
     if [[ $rc -eq 0 ]]; then
         red "FAIL: $base (expected failure but exited 0)"
         ((FAIL++))
@@ -69,10 +77,10 @@ for letf in test/error/*.let; do
     while IFS= read -r pattern; do
         pattern="${pattern%$'\r'}"
         [[ -z "$pattern" || "$pattern" == \#* ]] && continue
-        if ! grep -qF "$pattern" "$stderr_tmp"; then
+        if ! grep -qF "$pattern" "$actual_tmp"; then
             red "FAIL: $base (missing pattern: $pattern)"
             echo "  stderr was:"
-            sed 's/^/    /' "$stderr_tmp"
+            sed 's/^/    /' "$actual_tmp"
             ok=false
             break
         fi
