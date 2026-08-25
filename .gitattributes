@@ -1,0 +1,4 @@
+# Always check out text files with LF, regardless of the platform's core.autocrlf.
+# The test goldens pin exact byte output and the error fixtures pin exact column
+# numbers; a CRLF checkout on Windows would shift both.
+* text=auto eol=lf
