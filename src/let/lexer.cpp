@@ -9,7 +9,7 @@ namespace let {
 namespace utf8 = fe::utf8;
 
 Lexer::Lexer(Driver& driver, const fe::Src& src)
-    : fe::Lexer<1, Lexer>(src.buf(), &src)
+    : fe::Lexer<1, Lexer>(src)
     , driver_(driver) {
 #define CODE(t, str) keywords_[driver_.sym(str)] = Tok::Tag::t;
     LET_KEY(CODE)
