@@ -8,10 +8,9 @@ namespace let {
 
 namespace utf8 = fe::utf8;
 
-Lexer::Lexer(Driver& driver, std::istream& istream, const std::filesystem::path* path)
-    : fe::Lexer<1, Lexer>(istream, path)
+Lexer::Lexer(Driver& driver, const fe::Src& src)
+    : fe::Lexer<1, Lexer>(src.buf(), &src)
     , driver_(driver) {
-    if (!istream_) throw std::runtime_error("stream is bad");
 #define CODE(t, str) keywords_[driver_.sym(str)] = Tok::Tag::t;
     LET_KEY(CODE)
 #undef CODE
@@ -64,7 +63,7 @@ Tok Lexer::lex() {
             continue;
         }
 
-        driver().err({loc_.path, peek_}, "invalid input char: '{}'", utf8::Char32(ahead()));
+        driver().err(peek(), "invalid input char: '{}'", utf8::Char32(ahead()));
         next();
     }
 }

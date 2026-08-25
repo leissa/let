@@ -10,7 +10,7 @@ namespace let {
 
 class Parser : public fe::Parser<Tok, Tok::Tag, 1, Parser> {
 public:
-    Parser(Driver&, std::istream&, const std::filesystem::path* = nullptr);
+    Parser(Driver&, const fe::Src&);
 
     Driver& driver() { return lexer_.driver(); }
     Lexer& lexer() { return lexer_; }

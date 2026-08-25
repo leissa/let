@@ -8,10 +8,10 @@ namespace let {
 
 using Tag = Tok::Tag;
 
-Parser::Parser(Driver& driver, std::istream& istream, const std::filesystem::path* path)
-    : lexer_(driver, istream, path)
+Parser::Parser(Driver& driver, const fe::Src& src)
+    : lexer_(driver, src)
     , error_(driver.sym("<error>"s)) {
-    init(path);
+    init();
 }
 
 void Parser::err(const std::string& what, const Tok& tok, std::string_view ctxt) {

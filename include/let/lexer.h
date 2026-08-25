@@ -2,8 +2,6 @@
 
 #include <cassert>
 
-#include <istream>
-
 #include <fe/lexer.h>
 
 #include "let/driver.h"
@@ -13,7 +11,7 @@ namespace let {
 
 class Lexer : public fe::Lexer<1, Lexer> {
 public:
-    Lexer(Driver&, std::istream&, const std::filesystem::path*);
+    Lexer(Driver&, const fe::Src&);
 
     Tok lex(); ///< Get next Tok in stream.
     Driver& driver() { return driver_; }

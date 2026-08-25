@@ -2,4 +2,4 @@
 error: invalid input char
 # invalid UTF-8 bytes on line 2
 error: invalid UTF-8 character
-2 error(s) encountered
+3 error(s) encountered

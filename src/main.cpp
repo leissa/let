@@ -1,6 +1,5 @@
 #include <cstring>
 
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
@@ -47,9 +46,9 @@ int main(int argc, char** argv) {
 
         auto driver = let::Driver();
         auto path   = std::filesystem::path(input);
-        auto ifs    = std::ifstream(path);
-        if (!ifs) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
-        auto parser = let::Parser(driver, ifs, &path);
+        auto src    = driver.src().add(path).first;
+        if (!src) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
+        auto parser = let::Parser(driver, *src);
         auto prog   = parser.parse_prog();
 
         if (dump) prog->dump();
