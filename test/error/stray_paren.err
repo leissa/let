@@ -1,0 +1,4 @@
+test/error/stray_paren.let:1:12: error: ignoring unmatched ')' while parsing right-hand side of binary expression
+test/error/stray_paren.let:2:14: error: ignoring unmatched ')' while parsing print-statement
+test/error/stray_paren.let:3:7: error: ignoring unmatched ')' while parsing print-statement
+3 error(s) encountered

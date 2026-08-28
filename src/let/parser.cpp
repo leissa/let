@@ -18,6 +18,10 @@ void Parser::err(const std::string& what, const Tok& tok, std::string_view ctxt)
     driver().err(tok.loc(), "expected {}, got '{}' while parsing {}", what, tok, ctxt);
 }
 
+void Parser::unanchored_err(const Tok& tok, std::string_view ctxt) {
+    driver().err(tok.loc(), "ignoring unmatched '{}' while parsing {}", tok, ctxt);
+}
+
 void Parser::syntax_err(Tag tag, std::string_view ctxt) {
     std::string msg("'");
     msg.append(Tok::str(tag)).append("'");
@@ -35,10 +39,12 @@ Sym Parser::parse_sym(std::string_view ctxt) {
  */
 
 AST<Expr> Parser::parse_expr(std::string_view ctxt, Tok::Prec curr_prec) {
+    recover(Tag::D_paren_r, ctxt);
     auto track = tracker();
     auto lhs   = parse_primary_or_unary_expr(ctxt);
 
     while (true) {
+        recover(Tag::D_paren_r, ctxt);
         auto prec = Tok::bin_prec(ahead().tag());
         if (prec <= curr_prec) break;
         auto op  = lex().tag();
@@ -63,7 +69,8 @@ AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
     }
 
     if (accept(Tag::D_paren_l)) {
-        auto expr = parse_expr("parenthesized expression");
+        auto anchor = this->anchor(Tag::D_paren_r);
+        auto expr   = parse_expr("parenthesized expression");
         expect(Tag::D_paren_r, "parenthesized expression");
         return expr;
     }

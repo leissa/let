@@ -40,6 +40,10 @@ private:
 
     void syntax_err(Tok::Tag tag, std::string_view ctxt);
 
+    /// Issue an error message of the form:
+    /// `ignoring unmatched '<tok>' while parsing <ctxt>`
+    void unanchored_err(const Tok& tok, std::string_view ctxt);
+
     Lexer lexer_;
     Sym error_;
 
