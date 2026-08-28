@@ -14,7 +14,7 @@ Parser::Parser(Driver& driver, const fe::Src& src)
     init();
 }
 
-void Parser::err(const std::string& what, const Tok& tok, std::string_view ctxt) {
+void Parser::err(std::string_view what, const Tok& tok, std::string_view ctxt) {
     driver().err(tok.loc(), "expected {}, got '{}' while parsing {}", what, tok, ctxt);
 }
 
@@ -22,11 +22,7 @@ void Parser::unanchored_err(const Tok& tok, std::string_view ctxt) {
     driver().err(tok.loc(), "ignoring unmatched '{}' while parsing {}", tok, ctxt);
 }
 
-void Parser::syntax_err(Tag tag, std::string_view ctxt) {
-    std::string msg("'");
-    msg.append(Tok::str(tag)).append("'");
-    err(msg, ctxt);
-}
+void Parser::syntax_err(Tag tag, std::string_view ctxt) { err(std::format("'{}'", Tok::str(tag)), ctxt); }
 
 Sym Parser::parse_sym(std::string_view ctxt) {
     if (ahead().isa(Tag::V_sym)) return lex().sym();
