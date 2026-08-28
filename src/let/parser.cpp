@@ -69,8 +69,8 @@ AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
     }
 
     if (accept(Tag::D_paren_l)) {
-        auto anchor = this->anchor(Tag::D_paren_r);
-        auto expr   = parse_expr("parenthesized expression");
+        auto _    = this->anchor(Tag::D_paren_r);
+        auto expr = parse_expr("parenthesized expression");
         expect(Tag::D_paren_r, "parenthesized expression");
         return expr;
     }
