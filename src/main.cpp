@@ -11,7 +11,8 @@ int main(int argc, char** argv) {
     try {
         static const auto version = "let " LET_VERSION "\n";
         static const auto usage   = "USAGE:\n"
-                                    "  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval] [<file>]\n"
+                                    "  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval]\n"
+                                    "      [--no-snippet] [<file>]\n"
                                     "\n"
                                     "Display usage information.\n"
                                     ""
@@ -20,9 +21,11 @@ int main(int argc, char** argv) {
                                     "  -v, --version           Display version info and exit.\n"
                                     "  -d, --dump              Dumps the let program again.\n"
                                     "  -e, --eval              Evaluate the let program.\n"
+                                    "      --no-snippet        Only emit the header line of a diagnostic.\n"
                                     "  <file>                  Input file.\n";
         bool dump                 = false;
         bool eval                 = false;
+        bool no_snippet           = false;
         std::string input;
 
         for (int i = 1; i < argc; ++i) {
@@ -36,6 +39,8 @@ int main(int argc, char** argv) {
                 dump = true;
             } else if (argv[i] == "-e"s || argv[i] == "--eval"s) {
                 eval = true;
+            } else if (argv[i] == "--no-snippet"s) {
+                no_snippet = true;
             } else {
                 if (!input.empty()) throw std::invalid_argument("more than one input file given");
                 input = argv[i];
@@ -44,9 +49,10 @@ int main(int argc, char** argv) {
 
         if (input.empty()) throw std::invalid_argument("no input given");
 
-        auto driver = let::Driver();
-        auto path   = std::filesystem::path(input);
-        auto src    = driver.src().add(path).first;
+        auto driver       = let::Driver();
+        driver.no_snippet = no_snippet;
+        auto path         = std::filesystem::path(input);
+        auto src          = driver.src().add(path).first;
         if (!src) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
         auto parser = let::Parser(driver, *src);
         auto prog   = parser.parse_prog();

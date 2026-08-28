@@ -1,2 +1,4 @@
 test/error/unclosed_paren.let:1:13: error: expected ')', got ';' while parsing parenthesized expression
+    1 | print (1 + 2;
+      |             ^
 1 error(s) encountered

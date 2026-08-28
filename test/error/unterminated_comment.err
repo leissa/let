@@ -1,2 +1,4 @@
 test/error/unterminated_comment.let:2:1-2:27: error: non-terminated multiline comment
+    2 | /* this comment never ends
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^
 1 error(s) encountered

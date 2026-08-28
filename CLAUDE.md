@@ -14,7 +14,9 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j $(nproc)
 ```
 
-The binary lands in `build/bin/let`. Requires C++23 (CI builds with gcc-14 and clang on Linux, Apple clang and gcc-14 on macOS, MSVC and clang-cl on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it).
+The binary lands in `build/bin/let`. Requires C++23 (CI builds with gcc-14 and clang on Linux, Apple clang and gcc-14 on macOS, MSVC and clang-cl on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it, `--no-snippet` shrinks diagnostics to their header line).
+
+`CMakeLists.txt` sets `FE_LIB=ON` and links `fe-lib`, not `fe`: `fe` alone is header-only and declares - but does not define - the `Pos`/`Loc` streaming and `fe::stream_snippet` that the diagnostics need.
 
 ## Tests
 
@@ -25,7 +27,7 @@ bash test/run_tests.sh build/bin/let
 ```
 
 - `test/*.let` + `test/<name>.out`: run with `-e`, expect exit 0, stdout must match `.out` exactly.
-- `test/error/*.let` + `test/<name>.err`: expect non-zero exit; each non-empty, non-`#` line of the `.err` file must appear (fixed-string `grep -F`) in stderr.
+- `test/error/*.let` + `test/<name>.err`: expect non-zero exit; each non-empty, non-`#` line of the `.err` file must appear (fixed-string `grep -F`) in stderr. Most goldens include the snippet rows, so they fail if the source excerpt goes missing.
 - If a `.out`/`.err` file is missing, the script **generates** it from the current binary output — that's how you add a test: write the `.let` file, run the script, review the generated golden file.
 - Run a single test manually: `./build/bin/let test/eval.let -e | diff test/eval.out -`.
 
@@ -36,7 +38,7 @@ CI (`.github/workflows/{linux,macos,windows}.yml`) builds Debug+Release per comp
 Classic pipeline, one class per stage, all deriving from FE's CRTP base classes:
 
 - **`include/let/tok.h`** — `Tok` (token) built from X-macros (`LET_KEY`, `LET_VAL`, `LET_TOK`, `LET_OP`). Adding a keyword/operator/token means extending these macros; string forms, tags, and operator precedence (`Tok::Prec`) all derive from them.
-- **`include/let/driver.h`** — `let::Driver : fe::Driver` holds the symbol table, error counting, and an `fe::Arena`; `driver.ast<T>(...)` arena-allocates all AST nodes (returned as `AST<T> = fe::Arena::Ptr<const T>`; nodes are immutable after construction).
+- **`include/let/driver.h`** — `let::Driver : fe::Driver` holds the symbol table, error counting, and an `fe::Arena`; `driver.ast<T>(...)` arena-allocates all AST nodes (returned as `AST<T> = fe::Arena::Ptr<const T>`; nodes are immutable after construction). Diagnostics come from `fe::Driver`, which puts an `fe::stream_snippet` source excerpt under every message; `fe::Driver::{no_snippet,gutter,max_rows}` tune that.
 - **`src/let/lexer.cpp`** — `Lexer : fe::Lexer<1, Lexer>`. Deliberately case-insensitive (folds identifiers/keywords to lower case via `fe::Lexer::accept<Append::Lower>`) to exercise that FE path — keep this behavior.
 - **`src/let/parser.cpp`** — `Parser : fe::Parser<Tok, Tok::Tag, 1, Parser>`, recursive descent with precedence climbing (`parse_expr(ctxt, Prec)`). Parse errors don't throw; they increment the driver's error count, and `main.cpp` refuses to eval if `driver.num_errors() != 0`.
 - **`include/let/ast.h`** + **`src/let/eval.cpp`** / **`src/let/stream.cpp`** — AST nodes implement `stream()` (dumping) and `eval(Env&)` (tree-walking interpreter, `Env = fe::SymMap<uint64_t>`). Semantics: wrap-around u64 arithmetic, division by zero yields 0, unbound identifiers read as 0 (not an error).

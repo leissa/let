@@ -10,7 +10,8 @@ A simple demo language that builds upon [FE](https://leissa.github.io/fe/).
 
 ```
 USAGE:
-  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval] [<file>]
+  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval]
+      [--no-snippet] [<file>]
 
 Display usage information.
 
@@ -19,10 +20,23 @@ OPTIONS, ARGUMENTS:
   -v, --version           Display version info and exit.
   -d, --dump              Dumps the let program again.
   -e, --eval              Evaluate the let program.
+      --no-snippet        Only emit the header line of a diagnostic.
   <file>                  Input file.
 
 Use "-" as <file> to output to stdout.
 ```
+
+## Diagnostics
+
+Errors go through `fe::Driver::err`, which prints the offending source row and underlines the columns the `fe::Loc` covers:
+
+```
+test/error/unclosed_paren.let:1:13: error: expected ')', got ';' while parsing parenthesized expression
+    1 | print (1 + 2;
+      |             ^
+```
+
+`--no-snippet` drops the rows underneath and leaves just the header line.
 
 ## Building
 

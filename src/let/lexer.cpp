@@ -1,7 +1,5 @@
 #include "let/lexer.h"
 
-#include <fe/loc.cpp.h>
-
 using namespace std::literals;
 
 namespace let {

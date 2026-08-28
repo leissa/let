@@ -33,6 +33,7 @@ if(FE_ABSL)
     find_package(abseil)
 endif()
 
+set(FE_LIB ON) # we want fe's Loc rendering and source snippets
 add_subdirectory(submodules/fe)
 
 add_executable(let)
@@ -49,7 +50,7 @@ target_sources(let
         include/let/lexer.h
         include/let/tok.h
 )
-target_link_libraries(let PRIVATE fe)
+target_link_libraries(let PRIVATE fe-lib)
 target_compile_definitions(let PRIVATE LET_VERSION="${PROJECT_VERSION}")
 target_include_directories(let
     PUBLIC
