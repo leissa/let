@@ -14,7 +14,9 @@ trap 'rm -f "$stdout_tmp" "$stderr_tmp" "$actual_tmp"' EXIT
 # On Windows the C runtime opens stdout/stderr in text mode, so the binary emits
 # CRLF while the goldens are checked out with LF (see .gitattributes). Strip the
 # CRs from what the binary produced before comparing or generating goldens.
-strip_cr() { tr -d '\r' < "$1" > "$2"; }
+# LC_ALL=C makes tr operate byte-wise: the error tests feed the binary invalid
+# UTF-8, and BSD tr (macOS) bails out with "Illegal byte sequence" otherwise.
+strip_cr() { LC_ALL=C tr -d '\r' < "$1" > "$2"; }
 
 red()   { printf '\033[1;31m%s\033[0m\n' "$*"; }
 green() { printf '\033[1;32m%s\033[0m\n' "$*"; }
@@ -25,7 +27,7 @@ for letf in test/*.let; do
     ((TOTAL++))
 
     if [[ ! -f "$name.out" ]]; then
-        "$LET" "$letf" -e 2>/dev/null | tr -d '\r' > "$name.out"
+        "$LET" "$letf" -e 2>/dev/null | LC_ALL=C tr -d '\r' > "$name.out"
         green "GENERATED: $name.out"
         ((TOTAL--))
         continue
@@ -58,7 +60,7 @@ for letf in test/error/*.let; do
     ((TOTAL++))
 
     if [[ ! -f "$name.err" ]]; then
-        "$LET" "$letf" 2>&1 >/dev/null | tr -d '\r' > "$name.err"
+        "$LET" "$letf" 2>&1 >/dev/null | LC_ALL=C tr -d '\r' > "$name.err"
         green "GENERATED: $name.err"
         ((TOTAL--))
         continue
@@ -77,7 +79,7 @@ for letf in test/error/*.let; do
     while IFS= read -r pattern; do
         pattern="${pattern%$'\r'}"
         [[ -z "$pattern" || "$pattern" == \#* ]] && continue
-        if ! grep -qF "$pattern" "$actual_tmp"; then
+        if ! LC_ALL=C grep -qF "$pattern" "$actual_tmp"; then
             red "FAIL: $base (missing pattern: $pattern)"
             echo "  stderr was:"
             sed 's/^/    /' "$actual_tmp"
