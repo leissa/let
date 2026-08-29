@@ -1,0 +1,4 @@
+# --max-errors keeps the first two errors and says the rest went missing
+test/error/max_errors.let:1:12: error: ignoring unmatched `)` while parsing right-hand side of binary expression
+test/error/max_errors.let:2:14: error: ignoring unmatched `)` while parsing print-statement
+2 error(s) encountered; further diagnostics dropped
