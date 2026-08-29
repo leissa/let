@@ -59,15 +59,19 @@ for letf in test/error/*.let; do
     base=$(basename "$name")
     ((TOTAL++))
 
+    # An optional <name>.flags file holds extra CLI arguments for this test.
+    flags=()
+    [[ -f "$name.flags" ]] && read -r -a flags < "$name.flags"
+
     if [[ ! -f "$name.err" ]]; then
-        "$LET" "$letf" 2>&1 >/dev/null | LC_ALL=C tr -d '\r' > "$name.err"
+        "$LET" "$letf" "${flags[@]}" 2>&1 >/dev/null | LC_ALL=C tr -d '\r' > "$name.err"
         green "GENERATED: $name.err"
         ((TOTAL--))
         continue
     fi
 
     # Error test: expect non-zero exit, check patterns in stderr
-    "$LET" "$letf" > "$stdout_tmp" 2> "$stderr_tmp"
+    "$LET" "$letf" "${flags[@]}" > "$stdout_tmp" 2> "$stderr_tmp"
     rc=$?
     strip_cr "$stderr_tmp" "$actual_tmp"
     if [[ $rc -eq 0 ]]; then

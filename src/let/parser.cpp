@@ -25,8 +25,8 @@ void Parser::unanchored_err(const Tok& tok, std::string_view ctxt) {
 
 void Parser::syntax_err(Tag tag, std::string_view ctxt) {
     expected_err(std::format("`{}`", Tok::str(tag)), ctxt);
-    // Error::note_at drops this again if paren_l_ is unset or already covered by the error's own snippet.
-    if (tag == Tag::D_paren_r) err_.note_at(paren_l_, "unmatched `{}` opened here", Tok::str(Tag::D_paren_l));
+    // A note with a Loc drops itself again if paren_l_ is unset or already covered by the error's own snippet.
+    if (tag == Tag::D_paren_r) err_.note(paren_l_, "unmatched `{}` opened here", Tok::str(Tag::D_paren_l));
 }
 
 Dbg Parser::parse_sym(std::string_view ctxt) {

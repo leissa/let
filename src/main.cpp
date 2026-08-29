@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
         static const auto version = "let " LET_VERSION "\n";
         static const auto usage   = "USAGE:\n"
                                     "  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval]\n"
-                                    "      [--no-snippet] [<file>]\n"
+                                    "      [--max-errors <num>] [--no-snippet] [<file>]\n"
                                     "\n"
                                     "Display usage information.\n"
                                     ""
@@ -23,11 +23,13 @@ int main(int argc, char** argv) {
                                     "  -v, --version           Display version info and exit.\n"
                                     "  -d, --dump              Dumps the let program again.\n"
                                     "  -e, --eval              Evaluate the let program.\n"
+                                    "      --max-errors <num>  Report at most <num> errors; 0 reports all of them.\n"
                                     "      --no-snippet        Only emit the header line of a diagnostic.\n"
                                     "  <file>                  Input file.\n";
         bool dump                 = false;
         bool eval                 = false;
         bool no_snippet           = false;
+        uint32_t max_errors       = 0;
         std::string input;
 
         for (int i = 1; i < argc; ++i) {
@@ -41,6 +43,9 @@ int main(int argc, char** argv) {
                 dump = true;
             } else if (argv[i] == "-e"s || argv[i] == "--eval"s) {
                 eval = true;
+            } else if (argv[i] == "--max-errors"s) {
+                if (++i == argc) throw std::invalid_argument("--max-errors requires a number");
+                max_errors = uint32_t(std::stoul(argv[i]));
             } else if (argv[i] == "--no-snippet"s) {
                 no_snippet = true;
             } else {
@@ -53,6 +58,7 @@ int main(int argc, char** argv) {
 
         auto driver            = let::Driver();
         driver.diag.no_snippet = no_snippet;
+        driver.diag.max_errors = max_errors;
         auto path              = std::filesystem::path(input);
         auto src               = driver.src().add(path).first;
         if (!src) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
@@ -62,15 +68,12 @@ int main(int argc, char** argv) {
 
         if (dump) prog->dump();
 
-        // An fe::Error points into driver's SrcMap, so it must be handled while driver is still alive.
-        try {
-            err.ack(); // throws the collected errors; merely reports the warnings
-        } catch (const fe::Error& e) {
-            std::cerr << e << e.num_errors() << " error(s) encountered" << std::endl;
-            return EXIT_FAILURE;
-        }
-
+        // ack must run while driver is still alive: every Loc in err points into its SrcMap.
+        err.ack();              // throws what it collected; merely reports the warnings
         if (eval) prog->eval(); // only evaluate a well-formed program
+    } catch (const fe::Error::Bail& bail) {
+        std::cerr << bail; // already rendered, so the Driver it came from may be long gone
+        return EXIT_FAILURE;
     } catch (const std::exception& e) {
         std::cerr << "error: " << e.what() << std::endl;
         return EXIT_FAILURE;
