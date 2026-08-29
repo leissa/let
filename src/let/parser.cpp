@@ -25,8 +25,8 @@ void Parser::unanchored_err(const Tok& tok, std::string_view ctxt) {
 
 void Parser::syntax_err(Tag tag, std::string_view ctxt) {
     expected_err(std::format("`{}`", Tok::str(tag)), ctxt);
-    // A note with a Loc drops itself again if paren_l_ is unset or already covered by the error's own snippet.
-    if (tag == Tag::D_paren_r) err_.note(paren_l_, "unmatched `{}` opened here", Tok::str(Tag::D_paren_l));
+    // The note drops itself again if paren_l_ is already covered by the error's own snippet.
+    if (tag == Tag::D_paren_r && paren_l_) err_.note(paren_l_, "unmatched `{}` opened here", Tok::str(Tag::D_paren_l));
 }
 
 Dbg Parser::parse_sym(std::string_view ctxt) {
@@ -70,10 +70,11 @@ AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
     }
 
     if (auto paren_l = accept(Tag::D_paren_l)) {
-        // The Restore outlives the Anchor, so the `)` the Anchor expects can still name its `(`.
         auto restore = fe::Restore(paren_l_, paren_l.loc());
-        auto _       = this->anchor(Tag::D_paren_r, "parenthesized expression");
-        return parse_expr("parenthesized expression");
+        auto _       = this->anchor(Tag::D_paren_r);
+        auto expr    = parse_expr("parenthesized expression");
+        expect(Tag::D_paren_r, "parenthesized expression");
+        return expr;
     }
 
     if (!ctxt.empty()) {
