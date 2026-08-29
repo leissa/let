@@ -1,4 +1,4 @@
-test/error/missing_semicolon.let:2:1-2:5: error: expected ';', got 'print' while parsing let-statement
+test/error/missing_semicolon.let:2:1-2:5: error: expected `;`, got `print` while parsing let-statement `x`
     2 | print x;
       | ^^^^^
 1 error(s) encountered

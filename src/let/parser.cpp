@@ -8,26 +8,31 @@ namespace let {
 
 using Tag = Tok::Tag;
 
-Parser::Parser(Driver& driver, const fe::Src& src)
-    : lexer_(driver, src)
+Parser::Parser(Driver& driver, fe::Error& err, const fe::Src& src)
+    : err_(err)
+    , lexer_(driver, err, src)
     , error_(driver.sym("<error>"s)) {
     init();
 }
 
-void Parser::err(std::string_view what, const Tok& tok, std::string_view ctxt) {
-    driver().err(tok.loc(), "expected {}, got '{}' while parsing {}", what, tok, ctxt);
+void Parser::expected_err(std::string_view what, const Tok& tok, std::string_view ctxt) {
+    err_.error(tok.loc(), "expected {}, got `{}` while parsing {}", what, tok, ctxt);
 }
 
 void Parser::unanchored_err(const Tok& tok, std::string_view ctxt) {
-    driver().err(tok.loc(), "ignoring unmatched '{}' while parsing {}", tok, ctxt);
+    err_.error(tok.loc(), "ignoring unmatched `{}` while parsing {}", tok, ctxt);
 }
 
-void Parser::syntax_err(Tag tag, std::string_view ctxt) { err(std::format("'{}'", Tok::str(tag)), ctxt); }
+void Parser::syntax_err(Tag tag, std::string_view ctxt) {
+    expected_err(std::format("`{}`", Tok::str(tag)), ctxt);
+    // Error::note_at drops this again if paren_l_ is unset or already covered by the error's own snippet.
+    if (tag == Tag::D_paren_r) err_.note_at(paren_l_, "unmatched `{}` opened here", Tok::str(Tag::D_paren_l));
+}
 
-Sym Parser::parse_sym(std::string_view ctxt) {
-    if (ahead().isa(Tag::V_sym)) return lex().sym();
-    err("identifier", ctxt);
-    return error_;
+Dbg Parser::parse_sym(std::string_view ctxt) {
+    if (ahead().isa(Tag::V_sym)) return lex().dbg();
+    expected_err("identifier", ctxt);
+    return {ahead().loc(), error_};
 }
 
 /*
@@ -53,7 +58,7 @@ AST<Expr> Parser::parse_expr(std::string_view ctxt, Tok::Prec curr_prec) {
 
 AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
     switch (ahead().tag()) {
-        case Tag::V_sym: return ast<SymExpr>(lex());
+        case Tag::V_sym: return ast<SymExpr>(lex().dbg());
         case Tag::V_int: return ast<LitExpr>(lex());
         default: break;
     }
@@ -64,13 +69,15 @@ AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
         return ast<UnaryExpr>(track, op, parse_expr("operand of unary expression", prec));
     }
 
-    if (accept(Tag::D_paren_l)) {
-        auto _ = this->anchor(Tag::D_paren_r, "parenthesized expression");
+    if (auto paren_l = accept(Tag::D_paren_l)) {
+        // The Restore outlives the Anchor, so the `)` the Anchor expects can still name its `(`.
+        auto restore = fe::Restore(paren_l_, paren_l.loc());
+        auto _       = this->anchor(Tag::D_paren_r, "parenthesized expression");
         return parse_expr("parenthesized expression");
     }
 
     if (!ctxt.empty()) {
-        err("primary or unary expression", ctxt);
+        expected_err("primary or unary expression", ctxt);
         return ast<ErrExpr>(curr_);
     }
 
@@ -84,11 +91,12 @@ AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
 AST<Stmt> Parser::parse_let_stmt() {
     auto track = tracker();
     eat(Tag::K_let);
-    auto sym = parse_sym("name of a let-statement");
-    expect(Tag::T_ass, "let-statement");
+    auto dbg  = parse_sym("name of a let-statement");
+    auto ctxt = dbg.sym() == error_ ? "let-statement"s : std::format("let-statement `{}`", dbg);
+    expect(Tag::T_ass, ctxt);
     auto init = parse_expr("initialization expression of a let-statement");
-    expect(Tag::T_semicolon, "let-statement");
-    return ast<LetStmt>(track, sym, std::move(init));
+    expect(Tag::T_semicolon, ctxt);
+    return ast<LetStmt>(track, dbg, std::move(init));
 }
 
 AST<Stmt> Parser::parse_print_stmt() {
@@ -115,7 +123,7 @@ AST<Prog> Parser::parse_prog() {
             case Tag::EoF:         return ast<Prog>(track, std::move(stmts));
             default:
                 auto tok = lex();
-                driver().err(tok.loc(), "expected statement, got '{}' while parsing program", tok);
+                err_.error(tok.loc(), "expected statement, got `{}` while parsing program", tok);
         }
         // clang-format on
     }

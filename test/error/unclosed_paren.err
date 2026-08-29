@@ -1,4 +1,8 @@
-test/error/unclosed_paren.let:1:13: error: expected ')', got ';' while parsing parenthesized expression
+test/error/unclosed_paren.let:1:13: error: expected `)`, got `;` while parsing parenthesized expression
     1 | print (1 + 2;
       |             ^
+# the note points back at the `(` the missing `)` belongs to
+      test/error/unclosed_paren.let:1:7: note: unmatched `(` opened here
+    1 | print (1 + 2;
+      |       ^
 1 error(s) encountered

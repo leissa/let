@@ -16,7 +16,7 @@ cmake --build build -j $(nproc)
 
 The binary lands in `build/bin/let`. Requires C++23 (CI builds with gcc-14 and clang on Linux, Apple clang and gcc-14 on macOS, MSVC and clang-cl on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it, `--no-snippet` shrinks diagnostics to their header line).
 
-`CMakeLists.txt` sets `FE_LIB=ON` and links `fe-lib`, not `fe`: `fe` alone is header-only and declares - but does not define - the `Pos`/`Loc` streaming and `fe::stream_snippet` that the diagnostics need.
+`CMakeLists.txt` sets `FE_LIB=ON` and links `fe-lib`, not `fe`: `fe` alone is header-only and declares - but does not define - the `Pos`/`Loc` streaming and `fe::Snippet` that the diagnostics need.
 
 ## Tests
 
@@ -38,10 +38,10 @@ CI (`.github/workflows/{linux,macos,windows}.yml`) builds Debug+Release per comp
 Classic pipeline, one class per stage, all deriving from FE's CRTP base classes:
 
 - **`include/let/tok.h`** — `Tok` (token) built from X-macros (`LET_KEY`, `LET_VAL`, `LET_TOK`, `LET_OP`). Adding a keyword/operator/token means extending these macros; string forms, tags, and operator precedence (`Tok::Prec`) all derive from them.
-- **`include/let/driver.h`** — `let::Driver : fe::Driver` holds the symbol table, error counting, and an `fe::Arena`; `driver.ast<T>(...)` arena-allocates all AST nodes (returned as `AST<T> = fe::Arena::Ptr<const T>`; nodes are immutable after construction). Diagnostics come from `fe::Driver`, which puts an `fe::stream_snippet` source excerpt under every message; `fe::Driver::{no_snippet,gutter,max_rows}` tune that.
+- **`include/let/driver.h`** — `let::Driver : fe::Driver` holds the symbol table, the `SrcMap`, and an `fe::Arena`; `driver.ast<T>(...)` arena-allocates all AST nodes (returned as `AST<T> = fe::Arena::Ptr<const T>`; nodes are immutable after construction). Diagnostics are *not* in the driver: `main.cpp` creates one `fe::Error` and threads it through `Lexer`/`Parser` (both keep an `fe::Error& err_`), which record messages via `err_.{error,note,note_at}`. `fe::Error` puts an `fe::Snippet` source excerpt under every message and renders `` `code` `` citations in color, so phrase messages with backticks, not quotes; `fe::Driver::diag.{no_snippet,gutter,max_rows}` tune the layout.
 - **`src/let/lexer.cpp`** — `Lexer : fe::Lexer<1, Lexer>`. Deliberately case-insensitive (folds identifiers/keywords to lower case via `fe::Lexer::accept<Append::Lower>`) to exercise that FE path — keep this behavior.
-- **`src/let/parser.cpp`** — `Parser : fe::Parser<Tok, Tok::Tag, 1, Parser>`, recursive descent with precedence climbing (`parse_expr(ctxt, Prec)`). Parse errors don't throw; they increment the driver's error count, and `main.cpp` refuses to eval if `driver.num_errors() != 0`.
-- **`include/let/ast.h`** + **`src/let/eval.cpp`** / **`src/let/stream.cpp`** — AST nodes implement `stream()` (dumping) and `eval(Env&)` (tree-walking interpreter, `Env = fe::SymMap<uint64_t>`). Semantics: wrap-around u64 arithmetic, division by zero yields 0, unbound identifiers read as 0 (not an error).
+- **`src/let/parser.cpp`** — `Parser : fe::Parser<Tok, Tok::Tag, 1, Parser>`, recursive descent with precedence climbing (`parse_expr(ctxt, Prec)`). Parse errors don't throw while parsing; they accumulate in the shared `fe::Error`, and `main.cpp` calls `err.ack()` afterwards, which throws it if anything was collected — so the eval only ever sees a well-formed program. `ack` must be called while the `Driver` is still alive: every `Loc` in the `Error` points into its `SrcMap`. A missing `)` gets an `Error::note_at` pointing back at the `(`; `parse_primary_or_unary_expr` remembers that `(` in `paren_l_` with an `fe::Restore` whose scope outlives the `Anchor` that emits the error.
+- **`include/let/ast.h`** + **`src/let/eval.cpp`** / **`src/let/stream.cpp`** — AST nodes implement `stream()` (dumping) and `eval(Env&)` (tree-walking interpreter, `Env = fe::SymMap<uint64_t>`). Node lists are `ASTs<T> = fe::Vector<AST<T>>` handed out as `View<T> = fe::View<AST<T>>`. Named nodes (`SymExpr`, `LetStmt`) carry an `fe::Dbg` — a `Loc`/`Sym` pair — so a diagnostic can point at the name rather than the whole node. Semantics: wrap-around u64 arithmetic, division by zero yields 0, unbound identifiers read as 0 (not an error).
 
 `main.cpp` parses CLI args by hand (no library). The grammar and precedence table are documented in `README.md` — update it when changing the language.
 

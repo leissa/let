@@ -1,9 +1,10 @@
 #pragma once
 
-#include <deque>
 #include <ostream>
 
 #include <fe/cast.h>
+#include <fe/span.h>
+#include <fe/vector.h>
 
 #include "let/tok.h"
 
@@ -26,9 +27,12 @@ private:
     Loc loc_;
 };
 
+// clang-format off
 template<class T> using AST  = fe::Arena::Ptr<const T>;
-template<class T> using ASTs = std::deque<AST<T>>;
+template<class T> using ASTs = fe::Vector<AST<T>>;
+template<class T> using View = fe::View<AST<T>>; ///< Non-owning view of an ASTs.
 using Env                    = fe::SymMap<uint64_t>;
+// clang-format on
 
 /*
  * Expr
@@ -59,11 +63,12 @@ private:
 
 class SymExpr : public Expr {
 public:
-    SymExpr(Tok tok)
-        : Expr(tok.loc())
-        , sym_(tok.sym()) {}
+    SymExpr(Dbg dbg)
+        : Expr(dbg.loc())
+        , sym_(dbg.sym()) {}
 
     Sym sym() const { return sym_; }
+    Dbg dbg() const { return {loc(), sym()}; }
 
     std::ostream& stream(std::ostream&) const override;
     uint64_t eval(Env&) const override;
@@ -136,19 +141,20 @@ public:
 
 class LetStmt : public Stmt {
 public:
-    LetStmt(Loc loc, Sym sym, AST<Expr>&& init)
+    LetStmt(Loc loc, Dbg dbg, AST<Expr>&& init)
         : Stmt(loc)
-        , sym_(sym)
+        , dbg_(dbg)
         , init_(std::move(init)) {}
 
-    Sym sym() const { return sym_; }
+    Dbg dbg() const { return dbg_; } ///< @note Dbg::loc is the bound name - not the whole statement.
+    Sym sym() const { return dbg_.sym(); }
     const Expr* init() const { return init_.get(); }
 
     std::ostream& stream(std::ostream&) const override;
     void eval(Env&) const override;
 
 private:
-    Sym sym_;
+    Dbg dbg_;
     AST<Expr> init_;
 };
 
@@ -177,7 +183,7 @@ public:
         : Node(loc)
         , stmts_(std::move(stmts)) {}
 
-    const ASTs<Stmt>& stmts() const { return stmts_; }
+    View<Stmt> stmts() const { return stmts_.view(); }
 
     std::ostream& stream(std::ostream&) const override;
     void eval() const;

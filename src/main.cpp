@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <fe/error.h>
+
 #include "let/parser.h"
 
 using namespace std::literals;
@@ -49,18 +51,22 @@ int main(int argc, char** argv) {
 
         if (input.empty()) throw std::invalid_argument("no input given");
 
-        auto driver       = let::Driver();
-        driver.no_snippet = no_snippet;
-        auto path         = std::filesystem::path(input);
-        auto src          = driver.src().add(path).first;
+        auto driver            = let::Driver();
+        driver.diag.no_snippet = no_snippet;
+        auto path              = std::filesystem::path(input);
+        auto src               = driver.src().add(path).first;
         if (!src) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
-        auto parser = let::Parser(driver, *src);
+        auto err    = fe::Error(driver);
+        auto parser = let::Parser(driver, err, *src);
         auto prog   = parser.parse_prog();
 
         if (dump) prog->dump();
 
-        if (auto num = driver.num_errors()) {
-            std::cerr << num << " error(s) encountered" << std::endl;
+        // An fe::Error points into driver's SrcMap, so it must be handled while driver is still alive.
+        try {
+            err.ack(); // throws the collected errors; merely reports the warnings
+        } catch (const fe::Error& e) {
+            std::cerr << e << e.num_errors() << " error(s) encountered" << std::endl;
             return EXIT_FAILURE;
         }
 

@@ -2,12 +2,14 @@
 
 #include <cassert>
 
+#include <fe/dbg.h>
 #include <fe/format.h>
 #include <fe/loc.h>
 #include <fe/sym.h>
 
 namespace let {
 
+using fe::Dbg;
 using fe::Loc;
 using fe::Pos;
 using fe::Sym;
@@ -88,6 +90,9 @@ public:
         return sym_;
     }
     uint64_t u64() const { return u64_; }
+
+    /// The Loc/Sym pair of this identifier - what the AST drags along for diagnostics.
+    Dbg dbg() const { return {loc_, sym()}; }
 
     static std::string_view str(Tok::Tag);
     static Prec un_prec(Tok::Tag);

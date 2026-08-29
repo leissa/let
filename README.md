@@ -28,15 +28,19 @@ Use "-" as <file> to output to stdout.
 
 ## Diagnostics
 
-Errors go through `fe::Driver::err`, which prints the offending source row and underlines the columns the `fe::Loc` covers:
+Diagnostics are collected in an `fe::Error` that the lexer and the parser share; `main` hands it to `fe::Error::ack`, which throws it once parsing is done.
+Each message prints the offending source row and underlines the columns the `fe::Loc` covers, renders its `` `code` `` citations in color, and may carry notes pointing at a related location:
 
 ```
-test/error/unclosed_paren.let:1:13: error: expected ')', got ';' while parsing parenthesized expression
+test/error/unclosed_paren.let:1:13: error: expected `)`, got `;` while parsing parenthesized expression
     1 | print (1 + 2;
       |             ^
+      test/error/unclosed_paren.let:1:7: note: unmatched `(` opened here
+    1 | print (1 + 2;
+      |       ^
 ```
 
-`--no-snippet` drops the rows underneath and leaves just the header line.
+`--no-snippet` sets `fe::Driver::diag.no_snippet`, which drops the rows underneath and leaves just the header lines.
 
 ## Building
 
