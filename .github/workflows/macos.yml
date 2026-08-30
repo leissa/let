@@ -41,7 +41,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build -v
 
       - name: Test
-        run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let
+        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure
 
   # Apple clang has no LeakSanitizer; leak checking runs on Linux (LSan + Valgrind).
   sanitize:
@@ -69,7 +69,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build -v
 
       - name: Test
-        run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let
+        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure
 
       # See the same step in linux.yml: the error tests exit non-zero by design, so a sanitizer
       # abort inside one of them is only visible through log_path.

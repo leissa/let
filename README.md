@@ -65,6 +65,11 @@ Invoke the interpreter like so:
 ./build/bin/let test/test.let -e
 ```
 
+Run the test suite via CTest:
+```sh
+ctest --test-dir build
+```
+
 ## Grammar
 
 ```ebnf

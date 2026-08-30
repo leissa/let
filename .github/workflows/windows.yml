@@ -39,5 +39,4 @@ jobs:
         run: cmake --build ${{github.workspace}}/build -v
 
       - name: Test
-        shell: bash
-        run: bash test/run_tests.sh ./build/bin/let.exe
+        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure

@@ -20,6 +20,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}; shared libs: ${BUILD_SHARED_LIBS}")
 
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    include(CTest) # defines BUILD_TESTING
+endif()
+
 if(WIN32)
     add_compile_definitions(NOMINMAX) # prevents windows.h defining min/max macros
 else()
@@ -60,4 +64,8 @@ target_include_directories(let
 target_compile_features(let PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 if (MSVC AND BUILD_SHARED_LIBS AND FE_ABSL)
     target_compile_definitions(liblet PUBLIC ABSL_CONSUME_DLL)
+endif()
+
+if(BUILD_TESTING AND CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    add_subdirectory(test)
 endif()

@@ -20,19 +20,22 @@ The binary lands in `build/bin/let`. Requires C++23 (CI builds with gcc-14 and c
 
 ## Tests
 
-Golden-file tests driven by a shell script (no test framework):
+Golden-file tests, run by CTest (no test framework):
 
 ```sh
-bash test/run_tests.sh build/bin/let
+ctest --test-dir build            # --output-on-failure to see the diff; -R <regex> for one test
 ```
 
-- `test/*.let` + `test/<name>.out`: run with `-e`, expect exit 0, stdout must match `.out` exactly.
-- `test/error/*.let` + `test/<name>.err`: expect non-zero exit; each non-empty, non-`#` line of the `.err` file must appear (fixed-string `grep -F`) in stderr. Most goldens include the snippet rows, so they fail if the source excerpt goes missing.
+`test/CMakeLists.txt` globs the `.let` files (`CONFIGURE_DEPENDS`, so a new one re-runs CMake) and registers one test per file; `test/run_test.cmake` is the driver, invoked as `cmake -P` so the same logic runs on Windows too. Tests run with the project root as working directory because the goldens pin the source path as the diagnostics print it.
+
+- `test/*.let` + `test/<name>.out` (label `eval`): run with `-e`, expect exit 0, stdout must match `.out` exactly.
+- `test/error/*.let` + `test/error/<name>.err` (label `error`, test name `error/<name>`): expect non-zero exit; each non-empty, non-`#` line of the `.err` file must occur verbatim in stderr. Most goldens include the snippet rows, so they fail if the source excerpt goes missing.
   An optional `test/error/<name>.flags` file holds extra CLI arguments for that one test.
-- If a `.out`/`.err` file is missing, the script **generates** it from the current binary output — that's how you add a test: write the `.let` file, run the script, review the generated golden file.
+- If a `.out`/`.err` file is missing, the driver **generates** it from the current binary output and the test passes — that's how you add a test: write the `.let` file, build (to pick it up), run `ctest`, review the generated golden file.
+- The captured stdout/stderr of every test is kept in `build/test/<label>-<name>.{stdout,stderr}`.
 - Run a single test manually: `./build/bin/let test/eval.let -e | diff test/eval.out -`.
 
-CI (`.github/workflows/{linux,macos,windows}.yml`) builds Debug+Release per compiler and runs the test script. On Linux every test — including the error tests — additionally runs under valgrind (`--leak-check=full`), and a separate job runs the whole suite under ASan+LSan+UBSan (ASan+UBSan on macOS, which has no LSan). Since the error tests exit non-zero by design, both check a log rather than the exit code — so avoid leaks in error paths too.
+CI (`.github/workflows/{linux,macos,windows}.yml`) builds Debug+Release per compiler and runs `ctest`. On Linux every test — including the error tests — additionally runs under valgrind (`--leak-check=full`) via its own loop over the `.let` files, and a separate job runs the whole suite under ASan+LSan+UBSan (ASan+UBSan on macOS, which has no LSan). Since the error tests exit non-zero by design, both check a log rather than the exit code — so avoid leaks in error paths too.
 
 ## Architecture
 

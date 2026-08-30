@@ -43,7 +43,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build -v
 
       - name: Test
-        run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let
+        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure
 
       # Valgrind covers every test, not just eval.let -- the interpreter must not leak on its
       # error paths either. Those tests exit non-zero by design, so --error-exitcode cannot be the
@@ -96,7 +96,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build -v
 
       - name: Test
-        run: bash test/run_tests.sh ${{github.workspace}}/build/bin/let
+        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure
 
       # -fno-sanitize-recover=all aborts on the first report, but the error tests are *expected* to
       # exit non-zero and their .err patterns still match, so an abort in one of them would pass
