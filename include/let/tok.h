@@ -94,7 +94,7 @@ public:
     /// The Loc/Sym pair of this identifier - what the AST drags along for diagnostics.
     Dbg dbg() const { return {loc_, sym()}; }
 
-    static std::string_view str(Tok::Tag);
+    static std::string_view tag2str(Tok::Tag);
     static Prec un_prec(Tok::Tag);
     static Prec bin_prec(Tok::Tag);
 

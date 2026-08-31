@@ -8,30 +8,22 @@ namespace let {
 
 using Tag = Tok::Tag;
 
-Parser::Parser(Driver& driver, fe::Error& err, const fe::Src& src)
-    : err_(err)
-    , lexer_(driver, err, src)
+Parser::Parser(Driver& driver, const fe::Src& src)
+    : lexer_(driver, src)
     , error_(driver.sym("<error>"s)) {
     init();
 }
 
-void Parser::expected_err(std::string_view what, const Tok& tok, std::string_view ctxt) {
-    err_.error(tok.loc(), "expected {}, got `{}` while parsing {}", what, tok, ctxt);
-}
-
-void Parser::unanchored_err(const Tok& tok, std::string_view ctxt) {
-    err_.error(tok.loc(), "ignoring unmatched `{}` while parsing {}", tok, ctxt);
-}
-
 void Parser::syntax_err(Tag tag, std::string_view ctxt) {
-    expected_err(std::format("`{}`", Tok::str(tag)), ctxt);
+    Super::syntax_err(tag, ctxt);
     // The note drops itself again if paren_l_ is already covered by the error's own snippet.
-    if (tag == Tag::D_paren_r && paren_l_) err_.note(paren_l_, "unmatched `{}` opened here", Tok::str(Tag::D_paren_l));
+    if (tag == Tag::D_paren_r && paren_l_)
+        driver().note(paren_l_, "unmatched `{}` opened here", Tok::tag2str(Tag::D_paren_l));
 }
 
 Dbg Parser::parse_sym(std::string_view ctxt) {
     if (ahead().isa(Tag::V_sym)) return lex().dbg();
-    expected_err("identifier", ctxt);
+    syntax_err("identifier", ctxt);
     return {ahead().loc(), error_};
 }
 
@@ -78,7 +70,7 @@ AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
     }
 
     if (!ctxt.empty()) {
-        expected_err("primary or unary expression", ctxt);
+        syntax_err("primary or unary expression", ctxt);
         return ast<ErrExpr>(curr_);
     }
 
@@ -124,7 +116,7 @@ AST<Prog> Parser::parse_prog() {
             case Tag::EoF:         return ast<Prog>(track, std::move(stmts));
             default:
                 auto tok = lex();
-                err_.error(tok.loc(), "expected statement, got `{}` while parsing program", tok);
+                syntax_err("statement", tok, "program");
         }
         // clang-format on
     }

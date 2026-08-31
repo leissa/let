@@ -6,10 +6,9 @@ namespace let {
 
 namespace utf8 = fe::utf8;
 
-Lexer::Lexer(Driver& driver, fe::Error& err, const fe::Src& src)
+Lexer::Lexer(Driver& driver, const fe::Src& src)
     : fe::Lexer<1, Lexer>(src)
-    , driver_(driver)
-    , err_(err) {
+    , driver_(driver) {
 #define CODE(t, str) keywords_[driver_.sym(str)] = Tok::Tag::t;
     LET_KEY(CODE)
 #undef CODE
@@ -21,6 +20,7 @@ Tok Lexer::lex() {
 
         if (accept(utf8::EoF)) return {loc_, Tok::Tag::EoF};
         if (accept(utf8::isspace)) continue;
+        if (recover_utf8()) continue;
         if (accept('(')) return {loc_, Tok::Tag::D_paren_l};
         if (accept(')')) return {loc_, Tok::Tag::D_paren_r};
         if (accept('=')) return {loc_, Tok::Tag::T_ass};
@@ -57,13 +57,7 @@ Tok Lexer::lex() {
             return {loc_, sym};                                                               // identifier
         }
 
-        if (accept(utf8::Invalid)) {
-            err_.error(loc_, "invalid UTF-8 character");
-            continue;
-        }
-
-        err_.error(peek(), "invalid input char: `{}`", utf8::Char32(ahead()));
-        next();
+        recover_char();
     }
 }
 
@@ -72,7 +66,7 @@ void Lexer::eat_comments() {
         while (ahead() != utf8::EoF && ahead() != '*')
             next();
         if (ahead() == utf8::EoF) {
-            err_.error(loc_, "non-terminated multiline comment");
+            driver_.error(loc_, "non-terminated multiline comment");
             return;
         }
         next();

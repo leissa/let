@@ -1,5 +1,6 @@
 # invalid Unicode character on line 1
 error: invalid input char
 # invalid UTF-8 bytes on line 2
-error: invalid UTF-8 character
-3 error(s) encountered
+error: invalid UTF-8 sequence
+# both bytes are one run, so they are one diagnostic
+2 error(s) encountered

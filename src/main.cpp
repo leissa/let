@@ -56,20 +56,18 @@ int main(int argc, char** argv) {
 
         if (input.empty()) throw std::invalid_argument("no input given");
 
-        auto driver            = let::Driver();
-        driver.diag.no_snippet = no_snippet;
-        driver.diag.max_errors = max_errors;
-        auto path              = std::filesystem::path(input);
-        auto src               = driver.src().add(path).first;
+        auto driver              = let::Driver();
+        driver.diag().no_snippet = no_snippet;
+        driver.diag().max_errors = max_errors;
+        auto path                = std::filesystem::path(input);
+        auto src                 = driver.src().add(path).first;
         if (!src) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
-        auto err    = fe::Error(driver);
-        auto parser = let::Parser(driver, err, *src);
+        auto parser = let::Parser(driver, *src);
         auto prog   = parser.parse_prog();
 
         if (dump) prog->dump();
 
-        // ack must run while driver is still alive: every Loc in err points into its SrcMap.
-        err.ack();              // throws what it collected; merely reports the warnings
+        driver.error().ack();   // throws what it collected; merely reports the warnings
         if (eval) prog->eval(); // only evaluate a well-formed program
     } catch (const fe::Error::Bail& bail) {
         std::cerr << bail; // already rendered, so the Driver it came from may be long gone
