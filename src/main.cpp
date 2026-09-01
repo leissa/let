@@ -1,57 +1,37 @@
-#include <cstring>
-
+#include <format>
 #include <iostream>
 #include <stdexcept>
 
+#include <fe/cli.h>
 #include <fe/error.h>
 
 #include "let/parser.h"
 
-using namespace std::literals;
-
 int main(int argc, char** argv) {
     try {
-        static const auto version = "let " LET_VERSION "\n";
-        static const auto usage   = "USAGE:\n"
-                                    "  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval]\n"
-                                    "      [--max-errors <num>] [--no-snippet] [<file>]\n"
-                                    "\n"
-                                    "Display usage information.\n"
-                                    ""
-                                    "OPTIONS, ARGUMENTS:\n"
-                                    "  -?, -h, --help"
-                                    "  -v, --version           Display version info and exit.\n"
-                                    "  -d, --dump              Dumps the let program again.\n"
-                                    "  -e, --eval              Evaluate the let program.\n"
-                                    "      --max-errors <num>  Report at most <num> errors; 0 reports all of them.\n"
-                                    "      --no-snippet        Only emit the header line of a diagnostic.\n"
-                                    "  <file>                  Input file.\n";
-        bool dump                 = false;
-        bool eval                 = false;
-        bool no_snippet           = false;
-        uint32_t max_errors       = 0;
+        bool show_help = false, show_version = false, dump = false, eval = false, no_snippet = false;
+        uint32_t max_errors = 0;
         std::string input;
 
-        for (int i = 1; i < argc; ++i) {
-            if (argv[i] == "-v"s || argv[i] == "--version"s) {
-                std::cout << version;
-                return EXIT_SUCCESS;
-            } else if (argv[i] == "-?"s || argv[i] == "-h"s || argv[i] == "--help"s) {
-                std::cerr << usage;
-                return EXIT_SUCCESS;
-            } else if (argv[i] == "-d"s || argv[i] == "--dump"s) {
-                dump = true;
-            } else if (argv[i] == "-e"s || argv[i] == "--eval"s) {
-                eval = true;
-            } else if (argv[i] == "--max-errors"s) {
-                if (++i == argc) throw std::invalid_argument("--max-errors requires a number");
-                max_errors = uint32_t(std::stoul(argv[i]));
-            } else if (argv[i] == "--no-snippet"s) {
-                no_snippet = true;
-            } else {
-                if (!input.empty()) throw std::invalid_argument("more than one input file given");
-                input = argv[i];
-            }
+        auto cli
+            = fe::cli::Cli("let", "A simple demo language that builds upon FE.") | fe::cli::help(show_help)["-?"]
+            | fe::cli::opt(show_version)["-v"]["--version"]("Display version info and exit.")
+            | fe::cli::opt(dump)["-d"]["--dump"]("Dumps the let program again.")
+            | fe::cli::opt(eval)["-e"]["--eval"]("Evaluate the let program.")
+            | fe::cli::opt(max_errors, "num")["--max-errors"]("Report at most <num> errors; 0 reports all of them.")
+            | fe::cli::opt(no_snippet)["--no-snippet"]("Only emit the header line of a diagnostic.")
+            | fe::cli::arg(input, "file")("Input file.");
+
+        if (auto res = cli.parse(argc, argv); !res) throw std::invalid_argument(res.message());
+
+        if (show_help) {
+            std::cerr << cli;
+            return EXIT_SUCCESS;
+        }
+
+        if (show_version) {
+            std::cout << "let " LET_VERSION "\n";
+            return EXIT_SUCCESS;
         }
 
         if (input.empty()) throw std::invalid_argument("no input given");

@@ -9,21 +9,21 @@ A simple demo language that builds upon [FE](https://leissa.github.io/fe/).
 ## Usage
 
 ```
-USAGE:
-  let [-?|-h|--help] [-v|--version] [-d|--dump] [-e|--eval]
-      [--no-snippet] [<file>]
+Usage: let [options] <file>
 
-Display usage information.
+A simple demo language that builds upon FE.
 
-OPTIONS, ARGUMENTS:
-  -?, -h, --help
+Arguments:
+  <file>                  Input file.
+
+Options:
+  -h, -?, --help          Display this help and exit.
   -v, --version           Display version info and exit.
   -d, --dump              Dumps the let program again.
   -e, --eval              Evaluate the let program.
+      --max-errors <num>  Report at most <num> errors; 0 reports all of them.
+                          [default: 0]
       --no-snippet        Only emit the header line of a diagnostic.
-  <file>                  Input file.
-
-Use "-" as <file> to output to stdout.
 ```
 
 ## Diagnostics
