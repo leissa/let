@@ -18,7 +18,7 @@ void Parser::syntax_err(Tag tag, std::string_view ctxt) {
     Super::syntax_err(tag, ctxt);
     // The note drops itself again if paren_l_ is already covered by the error's own snippet.
     if (tag == Tag::D_paren_r && paren_l_)
-        driver().note(paren_l_, "unmatched `{}` opened here", Tok::tag2str(Tag::D_paren_l));
+        error().n(paren_l_, "unmatched `{}` opened here", Tok::tag2str(Tag::D_paren_l));
 }
 
 Dbg Parser::parse_sym(std::string_view ctxt) {

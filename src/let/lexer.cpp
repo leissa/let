@@ -66,7 +66,7 @@ void Lexer::eat_comments() {
         while (ahead() != utf8::EoF && ahead() != '*')
             next();
         if (ahead() == utf8::EoF) {
-            driver_.error(loc_, "non-terminated multiline comment");
+            error().e(loc_, "non-terminated multiline comment");
             return;
         }
         next();
