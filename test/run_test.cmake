@@ -9,7 +9,7 @@
 # ROOT    - the project root, to resolve SRC and the golden files without depending on the cwd
 # OUT_DIR - where the captured stdout/stderr are parked for post-mortem
 
-cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 
 get_filename_component(base "${SRC}" NAME_WE)
 set(stdout_file "${OUT_DIR}/${MODE}-${base}.stdout")

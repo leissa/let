@@ -13,14 +13,14 @@ int main(int argc, char** argv) {
         uint32_t max_errors = 0;
         std::string input;
 
-        auto cli = fe::Cli("let", "A simple demo language that builds upon FE.")
-                       .help(show_help)
-                       .opt(show_version, "-v", "--version", "Display version info and exit.")
-                       .opt(dump, "-d", "--dump", "Dumps the let program again.")
-                       .opt(eval, "-e", "--eval", "Evaluate the let program.")
-                       .opt(max_errors, "num", "--max-errors", "Report at most <num> errors; 0 reports all of them.")
-                       .opt(no_snippet, "--no-snippet", "Only emit the header line of a diagnostic.")
-                       .arg(input, "file", "Input file.");
+        auto cli = fe::Cli("let", "A simple demo language that builds upon FE.");
+        cli.help(show_help)
+            .opt(show_version, "-v", "--version", "Display version info and exit.")
+            .opt(dump, "-d", "--dump", "Dumps the let program again.")
+            .opt(eval, "-e", "--eval", "Evaluate the let program.")
+            .opt(max_errors, "num", "", "--max-errors", "Report at most <num> errors; 0 reports all of them.")
+            .opt(no_snippet, "", "--no-snippet", "Only emit the header line of a diagnostic.")
+            .arg(input, "file", "Input file.");
 
         if (auto err = cli.parse(argc, argv)) throw std::invalid_argument(*err);
 

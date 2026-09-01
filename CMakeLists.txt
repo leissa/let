@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 project(Let VERSION 0.13.1)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -21,6 +21,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}; shared libs: ${BUILD_SHARED_LIBS}")
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    # Make `make test`/`ninja test` build first instead of testing a stale binary.
+    set(CMAKE_SKIP_TEST_ALL_DEPENDENCY FALSE)
     include(CTest) # defines BUILD_TESTING
 endif()
 

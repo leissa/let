@@ -17,7 +17,7 @@ Arguments:
   <file>                  Input file.
 
 Options:
-  -h, -?, --help          Display this help and exit.
+  -h, --help              Display this help and exit.
   -v, --version           Display version info and exit.
   -d, --dump              Dumps the let program again.
   -e, --eval              Evaluate the let program.

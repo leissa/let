@@ -14,7 +14,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j $(nproc)
 ```
 
-The binary lands in `build/bin/let`. Requires C++23 (CI builds with gcc-14 and clang on Linux, Apple clang and gcc-14 on macOS, MSVC and clang-cl on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it, `--no-snippet` shrinks diagnostics to their header line, `--max-errors <num>` caps how many are reported).
+The binary lands in `build/bin/let`. Requires CMake 3.29 and C++23 (CI builds with gcc-14 and clang on Linux, Apple clang and gcc-14 on macOS, MSVC and clang-cl on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it, `--no-snippet` shrinks diagnostics to their header line, `--max-errors <num>` caps how many are reported).
 
 `CMakeLists.txt` sets `FE_LIB=ON` and links `fe-lib`, not `fe`: `fe` alone is header-only and declares - but does not define - the `Pos`/`Loc` streaming and `fe::Snippet` that the diagnostics need.
 
@@ -25,6 +25,8 @@ Golden-file tests, run by CTest (no test framework):
 ```sh
 ctest --test-dir build            # --output-on-failure to see the diff; -R <regex> for one test
 ```
+
+`ctest` itself does *not* rebuild, but `CMAKE_SKIP_TEST_ALL_DEPENDENCY FALSE` in `CMakeLists.txt` makes the generated `test` target depend on `all`, so `make test`/`ninja test` builds first — that variable is why the project requires CMake 3.29.
 
 `test/CMakeLists.txt` globs the `.let` files (`CONFIGURE_DEPENDS`, so a new one re-runs CMake) and registers one test per file; `test/run_test.cmake` is the driver, invoked as `cmake -P` so the same logic runs on Windows too. Tests run with the project root as working directory because the goldens pin the source path as the diagnostics print it.
 
