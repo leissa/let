@@ -14,7 +14,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j $(nproc)
 ```
 
-The binary lands in `build/bin/let`. Requires CMake 3.29 and C++23 (CI builds with gcc-14 and clang on Linux, Apple clang and gcc-14 on macOS, MSVC and clang-cl on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it, `--no-snippet` shrinks diagnostics to their header line, `--max-errors <num>` caps how many are reported).
+The binary lands in `build/bin/let`. Requires CMake 3.29 and C++23 (CI builds with gcc-14 on Linux, Apple clang on macOS, MSVC on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it, `--no-snippet` shrinks diagnostics to their header line, `--max-errors <num>` caps how many are reported).
 
 `CMakeLists.txt` sets `FE_LIB=ON` and links `fe-lib`, not `fe`: `fe` alone is header-only and declares - but does not define - the `Pos`/`Loc` streaming and `fe::Snippet` that the diagnostics need.
 

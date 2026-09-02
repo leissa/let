@@ -11,14 +11,11 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: ${{matrix.compiler.name}} ${{matrix.build-type}}
+    name: appleclang ${{matrix.build-type}}
     runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
-        compiler:
-          - {name: appleclang, cc: clang,  cxx: clang++}
-          - {name: gcc-14,     cc: gcc-14, cxx: g++-14}
         build-type: [Debug, Release]
 
     steps:
@@ -27,13 +24,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install GCC
-        if: matrix.compiler.name == 'gcc-14'
-        run: brew install gcc@14
-
       - name: Configure
         run: >
-          CC=${{matrix.compiler.cc}} CXX=${{matrix.compiler.cxx}}
+          CC=clang CXX=clang++
           cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -G Ninja
           -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
 

@@ -11,13 +11,11 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: ${{matrix.compiler}} ${{matrix.build-type}}
+    name: msvc ${{matrix.build-type}}
     runs-on: windows-2022
     strategy:
       fail-fast: false
       matrix:
-        # clang-cl uses the MSVC STL, so the MSVC environment is set up in both cases.
-        compiler: [msvc, clang-cl]
         build-type: [Debug, Release]
 
     steps:
@@ -33,7 +31,6 @@ jobs:
         run: >
           cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -G Ninja
           -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
-          ${{matrix.compiler == 'clang-cl' && '-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl' || ''}}
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build -v

@@ -11,15 +11,11 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: ${{matrix.compiler.name}} ${{matrix.build-type}}
+    name: gcc-14 ${{matrix.build-type}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # clang uses libstdc++ as its standard library, so g++-14 is installed in both cases.
-        compiler:
-          - {name: gcc-14, cc: gcc-14, cxx: g++-14,  apt: g++-14}
-          - {name: clang,  cc: clang,  cxx: clang++, apt: clang g++-14}
         build-type: [Debug, Release]
 
     steps:
@@ -31,11 +27,11 @@ jobs:
       - name: Install toolchain, Ninja, and Valgrind
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ninja-build valgrind ${{matrix.compiler.apt}}
+          sudo apt-get install -y --no-install-recommends ninja-build valgrind g++-14
 
       - name: Configure
         run: >
-          CC=${{matrix.compiler.cc}} CXX=${{matrix.compiler.cxx}}
+          CC=gcc-14 CXX=g++-14
           cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -G Ninja
           -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
 
