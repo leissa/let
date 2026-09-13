@@ -14,14 +14,14 @@ Parser::Parser(Driver& driver, const fe::Src& src)
     init();
 }
 
-void Parser::syntax_err(Tag tag, std::string_view ctxt) {
+void Parser::syntax_err(Tag tag, fe::Cite ctxt) {
     Super::syntax_err(tag, ctxt);
     // The note drops itself again if paren_l_ is already covered by the error's own snippet.
     if (tag == Tag::D_paren_r && paren_l_)
         error().n(paren_l_, "unmatched `{}` opened here", Tok::tag2str(Tag::D_paren_l));
 }
 
-Dbg Parser::parse_sym(std::string_view ctxt) {
+Dbg Parser::parse_sym(fe::Cite ctxt) {
     if (ahead().isa(Tag::V_sym)) return lex().dbg();
     syntax_err("identifier", ctxt);
     return {ahead().loc(), error_};
@@ -31,7 +31,7 @@ Dbg Parser::parse_sym(std::string_view ctxt) {
  * Expr
  */
 
-AST<Expr> Parser::parse_expr(std::string_view ctxt, Tok::Prec curr_prec) {
+AST<Expr> Parser::parse_expr(fe::Cite ctxt, Tok::Prec curr_prec) {
     recover(Tag::D_paren_r, ctxt);
     auto track = tracker();
     auto lhs   = parse_primary_or_unary_expr(ctxt);
@@ -48,7 +48,7 @@ AST<Expr> Parser::parse_expr(std::string_view ctxt, Tok::Prec curr_prec) {
     return lhs;
 }
 
-AST<Expr> Parser::parse_primary_or_unary_expr(std::string_view ctxt) {
+AST<Expr> Parser::parse_primary_or_unary_expr(fe::Cite ctxt) {
     switch (ahead().tag()) {
         case Tag::V_sym: return ast<SymExpr>(lex().dbg());
         case Tag::V_int: return ast<LitExpr>(lex());
@@ -85,7 +85,7 @@ AST<Stmt> Parser::parse_let_stmt() {
     auto track = tracker();
     eat(Tag::K_let);
     auto dbg  = parse_sym("name of a let-statement");
-    auto ctxt = dbg.sym() == error_ ? "let-statement"s : std::format("let-statement `{}`", dbg);
+    auto ctxt = fe::Cite(dbg.sym() == error_ ? "let-statement"s : std::format("let-statement `{}`", dbg));
     expect(Tag::T_ass, ctxt);
     auto init = parse_expr("initialization expression of a let-statement");
     expect(Tag::T_semicolon, ctxt);

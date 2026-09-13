@@ -26,10 +26,10 @@ private:
         return driver().ast<T>(std::forward<Args&&>(args)...);
     }
 
-    Dbg parse_sym(std::string_view ctxt = {});
+    Dbg parse_sym(fe::Cite = {});
 
-    AST<Expr> parse_expr(std::string_view ctxt, Tok::Prec = Tok::Prec::Bottom);
-    AST<Expr> parse_primary_or_unary_expr(std::string_view ctxt);
+    AST<Expr> parse_expr(fe::Cite, Tok::Prec = Tok::Prec::Bottom);
+    AST<Expr> parse_primary_or_unary_expr(fe::Cite);
 
     AST<Stmt> parse_let_stmt();
     AST<Stmt> parse_print_stmt();
@@ -37,7 +37,7 @@ private:
     using Super::syntax_err;
 
     /// As fe::Parser::syntax_err but a missing `)` also gets a note pointing back at its `(`.
-    void syntax_err(Tok::Tag tag, std::string_view ctxt);
+    void syntax_err(Tok::Tag tag, fe::Cite);
 
     Lexer lexer_;
     Sym error_;
