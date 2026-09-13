@@ -1,6 +1,5 @@
 #include <format>
 #include <iostream>
-#include <stdexcept>
 
 #include <fe/cli.h>
 #include <fe/error.h>
@@ -8,19 +7,41 @@
 #include "let/parser.h"
 
 int main(int argc, char** argv) {
+    // fe::CodeDiag renders a diagnostic when it is *recorded*, so decide on color up front.
+    fe::term::resolve_mode();
+    let::Driver driver; // outlives the handler below: it writes into the Driver's Diag
+
     try {
-        bool show_help = false, show_version = false, dump = false, eval = false, no_snippet = false;
-        uint32_t max_errors = 0;
+        // TODO put version number into cmake magic
+        bool show_help = false, show_version = false, dump = false, eval = false;
         std::string input;
 
-        auto cli = fe::Cli("let", "A simple demo language that builds upon FE.");
-        cli.help(show_help)
-            .opt(show_version, "-v", "--version", "Display version info and exit.")
-            .opt(dump, "-d", "--dump", "Dumps the let program again.")
-            .opt(eval, "-e", "--eval", "Evaluate the let program.")
-            .opt(max_errors, "num", "", "--max-errors", "Report at most <num> errors; 0 reports all of them.")
-            .opt(no_snippet, "", "--no-snippet", "Only emit the header line of a diagnostic.")
-            .arg(input, "file", "Input file.");
+        auto loc_style = [&](const std::string& t) -> std::string {
+            // clang-format off
+            if      (t == "full"  ) driver.diag().loc_style = fe::Loc::Style::Full;
+            else if (t == "rowcol") driver.diag().loc_style = fe::Loc::Style::RowCol;
+            else if (t == "row"   ) driver.diag().loc_style = fe::Loc::Style::Row;
+            else if (t == "msvc"  ) driver.diag().loc_style = fe::Loc::Style::MSVC;
+            else return std::format("'{}' is not a location style", t);
+            // clang-format on
+            return {};
+        };
+
+        // clang-format off
+        auto cli = fe::Cli("sql", "libsql command-line utility.")
+            .help(show_help)
+            .opt(show_version           ,          "-v", "--version"   , "Display version info and exit.")
+            .opt(dump                   ,          "-d", "--dump"      , "Dumps the SQL statement again.")
+            .grp("Diagnostics")
+            .opt(loc_style              , "style", ""  , "--loc-style" , "How a diagnostic spells out a source location: `full` (`path:row:col-row:col`), `rowcol` (`path:row:col`), `row` (`path:row`), or msvc (`path(row,col)`).")
+            .opt(driver.diag().no_snippet,         ""  , "--no-snippet", "Does not render the offending source line and caret underneath a diagnostic.")
+            .opt(driver.diag().gutter   , "width", ""  , "--gutter"    , "Width of a diagnostic's line-number column.")
+            .opt(driver.diag().max_rows , "num"  , ""  , "--max-rows"  , "Maximum number of rows a diagnostic's snippet renders before eliding its middle; `0` elides nothing.")
+            .opt(driver.diag().max_errors,"num"  , ""  , "--max-errors", "Maximum number of errors to report before dropping the rest; `0` reports all of them.")
+            .opt(driver.diag().werror   ,          ""  , "--werror"    , "Treats warnings as errors.")
+            .arg(input, "file", "Input file.")
+            .epilog("Use \"-\" as `<file>` to output to stdout.");
+        // clang-format on
 
         if (auto err = cli.parse(argc, argv)) throw std::invalid_argument(*err);
 
@@ -36,9 +57,6 @@ int main(int argc, char** argv) {
 
         if (input.empty()) throw std::invalid_argument("no input given");
 
-        auto driver              = let::Driver();
-        driver.diag().no_snippet = no_snippet;
-        driver.diag().max_errors = max_errors;
         auto path                = std::filesystem::path(input);
         auto src                 = driver.src().add(path).first;
         if (!src) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
