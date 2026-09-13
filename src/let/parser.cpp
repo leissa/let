@@ -85,7 +85,7 @@ AST<Stmt> Parser::parse_let_stmt() {
     auto track = tracker();
     eat(Tag::K_let);
     auto dbg  = parse_sym("name of a let-statement");
-    auto ctxt = fe::Cite(dbg.sym() == error_ ? "let-statement"s : std::format("let-statement `{}`", dbg));
+    auto ctxt = dbg.sym() == error_ ? fe::Cited("let-statement") : fe::format_cite("let-statement `{}`", dbg);
     expect(Tag::T_ass, ctxt);
     auto init = parse_expr("initialization expression of a let-statement");
     expect(Tag::T_semicolon, ctxt);
