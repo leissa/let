@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
-project(Let VERSION 0.13.1)
+project(Let VERSION 0.14.0)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type (default Debug)" FORCE)
