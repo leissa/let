@@ -82,7 +82,7 @@ public:
     Loc loc() const { return loc_; }
     Tag tag() const { return tag_; }
     bool isa(Tag tag) const { return tag == tag_; }
-    bool isa_key() const { return (int)tag() < Num_Keys; }
+    bool isa_key() const { return tag_ != Tag::Nil && (int)tag_ <= Num_Keys; }
     explicit operator bool() const { return tag_ != Tag::Nil; }
 
     Sym sym() const {

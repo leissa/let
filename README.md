@@ -14,16 +14,30 @@ Usage: let [options] <file>
 A simple demo language that builds upon FE.
 
 Arguments:
-  <file>                  Input file.
+  <file>                   Input file.
 
 Options:
-  -h, --help              Display this help and exit.
-  -v, --version           Display version info and exit.
-  -d, --dump              Dumps the let program again.
-  -e, --eval              Evaluate the let program.
-      --max-errors <num>  Report at most <num> errors; 0 reports all of them.
-                          [default: 0]
-      --no-snippet        Only emit the header line of a diagnostic.
+  -h, --help               Display this help and exit.
+  -v, --version            Display version info and exit.
+  -d, --dump               Dumps the let program again.
+  -e, --eval               Evaluate the let program.
+
+Diagnostics:
+      --loc-style <style>  How a diagnostic spells out a source location: `full`
+                           (`path:row:col-row:col`), `rowcol` (`path:row:col`),
+                           `row` (`path:row`), or msvc (`path(row,col)`).
+      --no-snippet         Does not render the offending source line and caret
+                           underneath a diagnostic.
+      --gutter <width>     Width of a diagnostic's line-number column. [default:
+                           `5`]
+      --max-rows <num>     Maximum number of rows a diagnostic's snippet renders
+                           before eliding its middle; `0` elides nothing.
+                           [default: `8`]
+      --max-errors <num>   Maximum number of errors to report before dropping
+                           the rest; `0` reports all of them. [default: `0`]
+      --werror             Treats warnings as errors.
+
+Use "-" as `<file>` to output to stdout.
 ```
 
 ## Diagnostics

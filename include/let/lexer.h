@@ -20,7 +20,7 @@ private:
     void eat_comments();
 
     Driver& driver_;
-    fe::SymMap<Tok::Tag> keywords_;
+    const Keys& keys_; ///< The Driver's keywords - see Driver::keys.
 };
 
 } // namespace let

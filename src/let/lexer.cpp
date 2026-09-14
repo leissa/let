@@ -1,18 +1,32 @@
 #include "let/lexer.h"
 
+#include <charconv>
+
+#include <algorithm>
+
 using namespace std::literals;
 
 namespace let {
 
 namespace utf8 = fe::utf8;
 
+namespace {
+/// std::from_chars leaves @p res alone on overflow, so saturate to the widest literal instead.
+uint64_t to_u64(std::string_view sv, int base) {
+    uint64_t res = 0;
+    auto ec      = std::from_chars(sv.data(), sv.data() + sv.size(), res, base).ec;
+    return ec == std::errc::result_out_of_range ? std::numeric_limits<uint64_t>::max() : res;
+}
+
+bool needs_fold(std::string_view sv) {
+    return std::ranges::any_of(sv, [](char c) { return utf8::isupper(c); });
+}
+} // namespace
+
 Lexer::Lexer(Driver& driver, const fe::Src& src)
     : fe::Lexer<1, Lexer>(src)
-    , driver_(driver) {
-#define CODE(t, str) keywords_[driver_.sym(str)] = Tok::Tag::t;
-    LET_KEY(CODE)
-#undef CODE
-}
+    , driver_(driver)
+    , keys_(driver.keys()) {}
 
 Tok Lexer::lex() {
     while (true) {
@@ -45,16 +59,15 @@ Tok Lexer::lex() {
         // integer value
         if (accept(utf8::isdigit)) {
             while (accept(utf8::isdigit)) {}
-            return {loc_, std::strtoull(str_.c_str(), nullptr, 10)};
+            return {loc_, to_u64(view(), 10)};
         }
 
         // lex identifier or keyword
-        if (accept<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c); })) {
-            while (accept<Append::Lower>([](char32_t c) { return c == '_' || utf8::isalpha(c) || utf8::isdigit(c); })) {
-            }
-            auto sym = driver_.sym(str_);
-            if (auto i = keywords_.find(sym); i != keywords_.end()) return {loc_, i->second}; // keyword
-            return {loc_, sym};                                                               // identifier
+        if (accept([](char32_t c) { return c == '_' || utf8::isalpha(c); })) {
+            accept_while([](char32_t c) { return c == '_' || utf8::isalpha(c) || utf8::isdigit(c); });
+            auto sym = needs_fold(view()) ? driver_.sym(lower()) : driver_.sym(view());
+            if (auto tag = keys_.find(sym)) return {loc_, *tag}; // keyword
+            return {loc_, sym};                                  // identifier
         }
 
         recover_char();

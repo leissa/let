@@ -42,7 +42,7 @@ AST<Expr> Parser::parse_expr(fe::Cite ctxt, Tok::Prec curr_prec) {
         if (prec <= curr_prec) break;
         auto op  = lex().tag();
         auto rhs = parse_expr("right-hand side of binary expression", prec);
-        lhs      = ast<BinExpr>(track, std::move(lhs), op, std::move(rhs));
+        lhs      = ast<BinExpr>(track, lhs, op, rhs);
     }
 
     return lhs;
@@ -89,7 +89,7 @@ AST<Stmt> Parser::parse_let_stmt() {
     expect(Tag::T_ass, ctxt);
     auto init = parse_expr("initialization expression of a let-statement");
     expect(Tag::T_semicolon, ctxt);
-    return ast<LetStmt>(track, dbg, std::move(init));
+    return ast<LetStmt>(track, dbg, init);
 }
 
 AST<Stmt> Parser::parse_print_stmt() {
@@ -97,7 +97,7 @@ AST<Stmt> Parser::parse_print_stmt() {
     eat(Tag::K_print);
     auto expr = parse_expr("print-statement");
     expect(Tag::T_semicolon, "print-statement");
-    return ast<PrintStmt>(track, std::move(expr));
+    return ast<PrintStmt>(track, expr);
 }
 
 /*
@@ -113,7 +113,7 @@ AST<Prog> Parser::parse_prog() {
             case Tag::T_semicolon: lex(); break; // empty statement
             case Tag::K_let:       stmts.emplace_back(parse_let_stmt());   break;
             case Tag::K_print:     stmts.emplace_back(parse_print_stmt()); break;
-            case Tag::EoF:         return ast<Prog>(track, std::move(stmts));
+            case Tag::EoF:         return ast<Prog>(track, stmts);
             default:
                 auto tok = lex();
                 syntax_err("statement", tok, "program");

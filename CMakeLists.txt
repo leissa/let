@@ -45,6 +45,7 @@ add_executable(let)
 target_sources(let
     PRIVATE
         src/main.cpp
+        src/let/driver.cpp
         src/let/eval.cpp
         src/let/lexer.cpp
         src/let/parser.cpp
@@ -53,6 +54,7 @@ target_sources(let
         include/let/ast.h
         include/let/driver.h
         include/let/lexer.h
+        include/let/parser.h
         include/let/tok.h
 )
 target_link_libraries(let PRIVATE fe)

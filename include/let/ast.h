@@ -1,21 +1,32 @@
 #pragma once
 
 #include <ostream>
+#include <tuple>
 
+#include <fe/arena.h>
 #include <fe/cast.h>
 #include <fe/span.h>
 #include <fe/vector.h>
+#include <fe/vla.h>
 
 #include "let/tok.h"
 
 namespace let {
 
+// clang-format off
+/// Nodes live in the Driver's Arena and are never destroyed, so this merely points at one.
+template<class T> using AST  = fe::Arena::Ref<const T>;
+template<class T> using ASTs = fe::Vector<AST<T>>; ///< Scratch buffer the Parser fills before it creates a node.
+template<class T> using View = fe::View<AST<T>>;   ///< Non-owning view of a node's own list - see fe::VLA.
+using Env                    = fe::SymMap<uint64_t>;
+// clang-format on
+
 /// Base class for all @p Expr%essions.
+/// @note No destructor, virtual or otherwise: the Arena reclaims every node at once.
 class Node : public fe::RuntimeCast<Node> {
 public:
     Node(Loc loc)
         : loc_(loc) {}
-    virtual ~Node() {}
 
     Loc loc() const { return loc_; }
     void dump() const;
@@ -26,13 +37,6 @@ public:
 private:
     Loc loc_;
 };
-
-// clang-format off
-template<class T> using AST  = fe::Arena::Ptr<const T>;
-template<class T> using ASTs = fe::Vector<AST<T>>;
-template<class T> using View = fe::View<AST<T>>; ///< Non-owning view of an ASTs.
-using Env                    = fe::SymMap<uint64_t>;
-// clang-format on
 
 /*
  * Expr
@@ -79,10 +83,10 @@ private:
 
 class UnaryExpr : public Expr {
 public:
-    UnaryExpr(Loc loc, Tok::Tag tag, AST<Expr>&& rhs)
+    UnaryExpr(Loc loc, Tok::Tag tag, AST<Expr> rhs)
         : Expr(loc)
         , tag_(tag)
-        , rhs_(std::move(rhs)) {}
+        , rhs_(rhs) {}
 
     Tok::Tag tag() const { return tag_; }
     const Expr* rhs() const { return rhs_.get(); }
@@ -97,11 +101,11 @@ private:
 
 class BinExpr : public Expr {
 public:
-    BinExpr(Loc loc, AST<Expr>&& lhs, Tok::Tag tag, AST<Expr>&& rhs)
+    BinExpr(Loc loc, AST<Expr> lhs, Tok::Tag tag, AST<Expr> rhs)
         : Expr(loc)
-        , lhs_(std::move(lhs))
+        , lhs_(lhs)
         , tag_(tag)
-        , rhs_(std::move(rhs)) {}
+        , rhs_(rhs) {}
 
     const Expr* lhs() const { return lhs_.get(); }
     Tok::Tag tag() const { return tag_; }
@@ -141,10 +145,10 @@ public:
 
 class LetStmt : public Stmt {
 public:
-    LetStmt(Loc loc, Dbg dbg, AST<Expr>&& init)
+    LetStmt(Loc loc, Dbg dbg, AST<Expr> init)
         : Stmt(loc)
         , dbg_(dbg)
-        , init_(std::move(init)) {}
+        , init_(init) {}
 
     Dbg dbg() const { return dbg_; } ///< @note Dbg::loc is the bound name - not the whole statement.
     Sym sym() const { return dbg_.sym(); }
@@ -160,9 +164,9 @@ private:
 
 class PrintStmt : public Stmt {
 public:
-    PrintStmt(Loc loc, AST<Expr>&& expr)
+    PrintStmt(Loc loc, AST<Expr> expr)
         : Stmt(loc)
-        , expr_(std::move(expr)) {}
+        , expr_(expr) {}
 
     const Expr* expr() const { return expr_.get(); }
 
@@ -177,19 +181,17 @@ private:
  * Prog
  */
 
-class Prog : public Node {
+class Prog : public Node, public fe::VLA<Prog> {
 public:
-    Prog(Loc loc, ASTs<Stmt>&& stmts)
-        : Node(loc)
-        , stmts_(std::move(stmts)) {}
+    using VLA_Types = std::tuple<AST<Stmt>>;
 
-    View<Stmt> stmts() const { return stmts_.view(); }
+    Prog(Loc loc)
+        : Node(loc) {}
+
+    auto stmts() const { return vla<0>(); }
 
     std::ostream& stream(std::ostream&) const override;
     void eval() const;
-
-private:
-    ASTs<Stmt> stmts_;
 };
 
 } // namespace let

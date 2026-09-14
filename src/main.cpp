@@ -28,11 +28,11 @@ int main(int argc, char** argv) {
         };
 
         // clang-format off
-        auto cli = fe::Cli("sql", "libsql command-line utility.")
+        auto cli = fe::Cli("let", "A simple demo language that builds upon FE.")
             .help(show_help)
             .opt(show_version           ,          "-v", "--version"   , "Display version info and exit.")
-            .opt(dump                   ,          "-d", "--dump"      , "Dumps the Let program again.")
-            .opt(eval                   ,          "-e", "--eval"      , "Evaluate program.")
+            .opt(dump                   ,          "-d", "--dump"      , "Dumps the let program again.")
+            .opt(eval                   ,          "-e", "--eval"      , "Evaluate the let program.")
             .grp("Diagnostics")
             .opt(loc_style              , "style", ""  , "--loc-style" , "How a diagnostic spells out a source location: `full` (`path:row:col-row:col`), `rowcol` (`path:row:col`), `row` (`path:row`), or msvc (`path(row,col)`).")
             .opt(driver.diag().no_snippet,         ""  , "--no-snippet", "Does not render the offending source line and caret underneath a diagnostic.")
@@ -58,8 +58,8 @@ int main(int argc, char** argv) {
 
         if (input.empty()) throw std::invalid_argument("no input given");
 
-        auto path                = std::filesystem::path(input);
-        auto src                 = driver.src().add(path).first;
+        auto path = std::filesystem::path(input);
+        auto src  = driver.src().add(path).first;
         if (!src) throw std::runtime_error(std::format("cannot read file \"{}\"", input));
         auto parser = let::Parser(driver, *src);
         auto prog   = parser.parse_prog();
