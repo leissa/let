@@ -33,6 +33,7 @@ public:
 
     /// Stream to @p o.
     virtual void stream(std::ostream& o) const = 0;
+    friend std::ostream& operator<<(std::ostream& o, const Node& node) { return node.stream(o), o; }
 
 private:
     Loc loc_;
@@ -195,3 +196,10 @@ public:
 };
 
 } // namespace let
+
+#ifndef DOXYGEN
+// clang-format off
+template<std::derived_from<let::Node> T> struct std::formatter<T,           char> : fe::ostream_formatter {};
+template<std::derived_from<let::Node> T> struct std::formatter<let::AST<T>, char> : fe::ostream_formatter {};
+// clang-format on
+#endif

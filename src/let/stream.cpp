@@ -13,40 +13,20 @@ void Node::dump() const { stream(std::cout); }
  */
 
 // clang-format off
-void ErrExpr::stream(std::ostream& o) const { o << "<error expression>"; }
-void LitExpr::stream(std::ostream& o) const { o << u64(); }
-void SymExpr::stream(std::ostream& o) const { o << sym(); }
+void ErrExpr::stream(std::ostream& os) const { os << "<error expression>"; }
+void LitExpr::stream(std::ostream& os) const { os << u64(); }
+void SymExpr::stream(std::ostream& os) const { os << sym(); }
 // clang-format on
 
-void UnaryExpr::stream(std::ostream& o) const {
-    o << '(' << tag();
-    rhs()->stream(o);
-    o << ')';
-}
-
-void BinExpr::stream(std::ostream& o) const {
-    o << '(';
-    lhs()->stream(o);
-    o << ' ' << tag() << ' ';
-    rhs()->stream(o);
-    o << ')';
-}
+void UnaryExpr::stream(std::ostream& os) const { std::print(os, "({}{})", tag(), *rhs()); }
+void BinExpr::stream(std::ostream& os) const { std::print(os, "({} {} {})", *lhs(), tag(), *rhs()); }
 
 /*
  * Stmt
  */
 
-void LetStmt::stream(std::ostream& o) const {
-    o << "let " << sym() << " = ";
-    init()->stream(o);
-    o << ';' << std::endl;
-}
-
-void PrintStmt::stream(std::ostream& o) const {
-    o << "print ";
-    expr()->stream(o);
-    o << ';' << std::endl;
-}
+void LetStmt::stream(std::ostream& os) const { std::println(os, "let {} = {};", sym(), *init()); }
+void PrintStmt::stream(std::ostream& os) const { std::println(os, "print {};", *expr()); }
 
 /*
  * Prog

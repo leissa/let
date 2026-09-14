@@ -98,9 +98,6 @@ public:
     static Prec un_prec(Tok::Tag);
     static Prec bin_prec(Tok::Tag);
 
-    friend std::ostream& operator<<(std::ostream&, Tag);
-    friend std::ostream& operator<<(std::ostream&, Tok);
-
 private:
     Loc loc_;
     Tag tag_ = Tag::Nil;
@@ -110,7 +107,12 @@ private:
     };
 };
 
+std::ostream& operator<<(std::ostream&, Tok::Tag);
+std::ostream& operator<<(std::ostream&, Tok);
+
 } // namespace let
 
-template<>
-struct std::formatter<let::Tok> : fe::ostream_formatter {};
+// clang-format off
+template<> struct std::formatter<let::Tok>      : fe::ostream_formatter {};
+template<> struct std::formatter<let::Tok::Tag> : fe::ostream_formatter {};
+// clang-format on
