@@ -50,7 +50,8 @@ void PrintStmt::eval(Env& env) const { std::cout << expr()->eval(env) << std::en
 
 void Prog::eval() const {
     Env env;
-    for (auto&& stmt : stmts()) stmt->eval(env);
+    for (auto&& stmt : stmts())
+        stmt->eval(env);
 }
 
 } // namespace let

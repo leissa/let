@@ -32,7 +32,7 @@ public:
     void dump() const;
 
     /// Stream to @p o.
-    virtual std::ostream& stream(std::ostream& o) const = 0;
+    virtual void stream(std::ostream& o) const = 0;
 
 private:
     Loc loc_;
@@ -58,7 +58,7 @@ public:
 
     uint64_t u64() const { return u64_; }
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     uint64_t eval(Env&) const override;
 
 private:
@@ -74,7 +74,7 @@ public:
     Sym sym() const { return sym_; }
     Dbg dbg() const { return {loc(), sym()}; }
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     uint64_t eval(Env&) const override;
 
 private:
@@ -91,7 +91,7 @@ public:
     Tok::Tag tag() const { return tag_; }
     const Expr* rhs() const { return rhs_.get(); }
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     uint64_t eval(Env&) const override;
 
 private:
@@ -111,7 +111,7 @@ public:
     Tok::Tag tag() const { return tag_; }
     const Expr* rhs() const { return rhs_.get(); }
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     uint64_t eval(Env&) const override;
 
 private:
@@ -126,7 +126,7 @@ public:
     ErrExpr(Loc loc)
         : Expr(loc) {}
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     uint64_t eval(Env&) const override;
 };
 
@@ -154,7 +154,7 @@ public:
     Sym sym() const { return dbg_.sym(); }
     const Expr* init() const { return init_.get(); }
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     void eval(Env&) const override;
 
 private:
@@ -170,7 +170,7 @@ public:
 
     const Expr* expr() const { return expr_.get(); }
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     void eval(Env&) const override;
 
 private:
@@ -190,7 +190,7 @@ public:
 
     auto stmts() const { return vla<0>(); }
 
-    std::ostream& stream(std::ostream&) const override;
+    void stream(std::ostream&) const override;
     void eval() const;
 };
 
