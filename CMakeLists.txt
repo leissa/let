@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 project(Let VERSION 0.14.0)
 
+include(GNUInstallDirs)
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type (default Debug)" FORCE)
 endif()
@@ -32,13 +34,6 @@ else()
     add_compile_options(-Wall -Wextra)
 endif()
 
-set(FE_ABSL OFF)
-if(FE_ABSL)
-    set(ABSL_PROPAGATE_CXX_STD ON)
-    set(ABSL_ENABLE_INSTALL ON)
-    find_package(abseil)
-endif()
-
 add_subdirectory(submodules/fe)
 
 add_executable(let)
@@ -58,16 +53,19 @@ target_sources(let
         include/let/tok.h
 )
 target_link_libraries(let PRIVATE fe)
-target_compile_definitions(let PRIVATE LET_VERSION="${PROJECT_VERSION}")
+# What `--version` reports; both derive from the project(... VERSION) calls that scripts/release.sh bumps.
+# fe's project() only sets fe_VERSION within its own directory scope, so fetch it from there.
+get_directory_property(fe_version DIRECTORY submodules/fe DEFINITION fe_VERSION)
+target_compile_definitions(let PRIVATE LET_VERSION="${Let_VERSION}" FE_VERSION="${fe_version}")
 target_include_directories(let
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 target_compile_features(let PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-if (MSVC AND BUILD_SHARED_LIBS AND FE_ABSL)
-    target_compile_definitions(liblet PUBLIC ABSL_CONSUME_DLL)
-endif()
+
+install(TARGETS let RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/let")
 
 if(BUILD_TESTING AND CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     add_subdirectory(test)

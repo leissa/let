@@ -9,6 +9,10 @@ set -euo pipefail
 #   3. tag v<version> and push branch + tag
 #   4. create a GitHub release (FE <version> / Let <version>) with generated notes
 #
+# Step 1 is the only place a version number lives: `let --version` prints the
+# LET_VERSION/FE_VERSION macros, which CMakeLists.txt derives from the two
+# project(... VERSION) calls - so bumping those is all it takes.
+#
 # The script is resumable: if a previous run died half-way (e.g. after tagging but
 # before creating the GitHub release), just run it again with the same version -
 # steps that are already done are skipped.

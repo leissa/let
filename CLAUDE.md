@@ -14,6 +14,8 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j $(nproc)
 ```
 
+`cmake --install build --prefix <prefix>` installs the binary and `LICENSE`; fe skips its own install rules when embedded (its `FE_INSTALL` defaults to top-level only), so nothing but `let` lands in the prefix.
+
 The binary lands in `build/bin/let`. Requires CMake 3.29 and C++23 (CI builds with gcc-14 on Linux, Apple clang on macOS, MSVC on Windows). Run the interpreter with e.g. `./build/bin/let test/eval.let -e` (`-d` dumps the parsed program, `-e` evaluates it, `--no-snippet` shrinks diagnostics to their header line, `--max-errors <num>` caps how many are reported).
 
 ## Tests
@@ -54,3 +56,4 @@ Classic pipeline, one class per stage, all deriving from FE's CRTP base classes:
 
 - clang-format is enforced via pre-commit (`.pre-commit-config.yaml`); `.clang-format` is at the repo root. Code uses `// clang-format off/on` around the X-macro tables.
 - `scripts/release.sh <version>` releases fe and let in tandem with the same version number (bumps `project(... VERSION)`, tags, pushes, creates GitHub releases via `gh`).
+- The `project(... VERSION)` lines are the only place a version number lives: `CMakeLists.txt` turns them into the `LET_VERSION`/`FE_VERSION` defines that `--version` prints (fe's `fe_VERSION` is scoped to its own directory, hence the `get_directory_property`), so a bump needs no other edit.

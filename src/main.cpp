@@ -12,7 +12,6 @@ int main(int argc, char** argv) {
     let::Driver driver; // outlives the handler below: it writes into the Driver's Diag
 
     try {
-        // TODO put version number into cmake magic
         bool show_help = false, show_version = false, dump = false, eval = false;
         std::string input;
 
@@ -52,7 +51,7 @@ int main(int argc, char** argv) {
         }
 
         if (show_version) {
-            std::cout << "let " LET_VERSION "\n";
+            std::cout << "let " LET_VERSION " (fe " FE_VERSION ")\n";
             return EXIT_SUCCESS;
         }
 

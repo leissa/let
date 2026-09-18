@@ -84,6 +84,11 @@ Run the test suite via CTest:
 ctest --test-dir build
 ```
 
+Install with:
+```sh
+cmake --install build --prefix /usr/local
+```
+
 ## Grammar
 
 ```ebnf
