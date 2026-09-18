@@ -75,16 +75,12 @@ Tok Lexer::lex() {
 }
 
 void Lexer::eat_comments() {
-    while (true) {
-        while (ahead() != utf8::EoF && ahead() != '*')
-            next();
-        if (ahead() == utf8::EoF) {
-            error().e(loc_, "non-terminated multiline comment");
-            return;
-        }
-        next();
-        if (accept('/')) break;
+    accept_until("*/");
+    if (!accept('*')) {
+        error().e(loc_, "non-terminated multiline comment");
+        return;
     }
+    accept('/');
 }
 
 } // namespace let
