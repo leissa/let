@@ -21,9 +21,9 @@ public:
     AST<Prog> parse_prog();
 
 private:
-    template<class T, class... Args>
-    auto ast(Args&&... args) {
-        return driver().ast<T>(std::forward<Args&&>(args)...);
+    template<class T>
+    auto ast(auto&&... args) {
+        return driver().ast<T>(std::forward<decltype(args)>(args)...);
     }
 
     Dbg parse_sym(fe::Cite = {});

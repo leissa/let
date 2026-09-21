@@ -14,9 +14,9 @@ class Driver : public fe::Driver {
 public:
     Driver();
 
-    template<class T, class... Args>
-    auto ast(Args&&... args) {
-        return arena_.ref<const T>(std::forward<Args&&>(args)...);
+    template<class T>
+    auto ast(auto&&... args) {
+        return arena_.ref<const T>(std::forward<decltype(args)>(args)...);
     }
 
     /// The keywords, interned once here and borrowed by every Lexer this Driver serves.
