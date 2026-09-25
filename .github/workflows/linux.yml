@@ -12,7 +12,7 @@ concurrency:
 jobs:
   build-and-test:
     name: gcc-15 ${{matrix.build-type}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -64,7 +64,7 @@ jobs:
 
   sanitize:
     name: ASan+LSan+UBSan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
       ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_leaks=1:log_path=/tmp/sanitizer
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1:log_path=/tmp/sanitizer
