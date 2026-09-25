@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: gcc-14 ${{matrix.build-type}}
+    name: gcc-15 ${{matrix.build-type}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -27,11 +27,11 @@ jobs:
       - name: Install toolchain, Ninja, and Valgrind
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ninja-build valgrind g++-14
+          sudo apt-get install -y --no-install-recommends ninja-build valgrind g++-15
 
       - name: Configure
         run: >
-          CC=gcc-14 CXX=g++-14
+          CC=gcc-15 CXX=g++-15
           cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -G Ninja
           -DCMAKE_BUILD_TYPE=${{matrix.build-type}}
 
@@ -78,7 +78,7 @@ jobs:
       - name: Install toolchain and Ninja
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ninja-build clang g++-14
+          sudo apt-get install -y --no-install-recommends ninja-build clang g++-15
 
       - name: Configure
         run: >
