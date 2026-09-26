@@ -14,11 +14,12 @@ Parser::Parser(Driver& driver, const fe::Src& src)
     init();
 }
 
-void Parser::syntax_err(Tag tag, fe::Cite ctxt) {
-    Super::syntax_err(tag, ctxt);
+fe::Error& Parser::syntax_err(Expected what, fe::Cite ctxt, Tok got) {
+    auto& err = Super::syntax_err(what, ctxt, got);
     // The note drops itself again if paren_l_ is already covered by the error's own snippet.
-    if (tag == Tag::D_paren_r && paren_l_)
-        error().n(paren_l_, "unmatched `{}` opened here", Tok::tag2str(Tag::D_paren_l));
+    if (what.tag == Tag::D_paren_r && paren_l_)
+        err.n(paren_l_, "unmatched `{}` opened here", Tok::tag2str(Tag::D_paren_l));
+    return err;
 }
 
 Dbg Parser::parse_sym(fe::Cite ctxt) {
@@ -116,7 +117,7 @@ AST<Prog> Parser::parse_prog() {
             case Tag::EoF:         return ast<Prog>(track, stmts);
             default:
                 auto tok = lex();
-                syntax_err("statement", tok, "program");
+                syntax_err("statement", "program", tok);
         }
         // clang-format on
     }

@@ -34,10 +34,8 @@ private:
     AST<Stmt> parse_let_stmt();
     AST<Stmt> parse_print_stmt();
 
-    using Super::syntax_err;
-
     /// As fe::Parser::syntax_err but a missing `)` also gets a note pointing back at its `(`.
-    void syntax_err(Tok::Tag tag, fe::Cite);
+    fe::Error& syntax_err(Expected, fe::Cite, Tok = {});
 
     Lexer lexer_;
     Sym error_;
