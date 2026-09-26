@@ -63,8 +63,7 @@ AST<Expr> Parser::parse_primary_or_unary_expr(fe::Cite ctxt) {
     }
 
     if (auto paren_l = accept(Tag::D_paren_l)) {
-        auto restore = fe::Restore(paren_l_, paren_l.loc());
-        auto _       = this->anchor(Tag::D_paren_r);
+        auto _       = this->anchor(paren_l, Tag::D_paren_r);
         auto expr    = parse_expr("parenthesized expression");
         expect(Tag::D_paren_r, "parenthesized expression");
         return expr;
