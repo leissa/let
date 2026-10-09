@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         if (auto err = cli.parse(argc, argv)) throw std::invalid_argument(*err);
 
         if (show_help) {
-            std::cerr << cli;
+            std::cout << cli;
             return EXIT_SUCCESS;
         }
 
