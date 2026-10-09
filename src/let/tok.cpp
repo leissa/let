@@ -1,6 +1,6 @@
 #include "let/tok.h"
 
-#include <fe/assert.h>
+#include <utility>
 
 using namespace std::literals;
 
@@ -18,7 +18,7 @@ std::string_view Tok::tag2str(Tok::Tag tag) {
     case Tok::Tag::t: return str##sv;
         LET_OP(CODE)
 #undef CODE
-        default: fe::unreachable();
+        default: std::unreachable();
     }
 }
 

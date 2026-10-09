@@ -1,6 +1,5 @@
 #include <iostream>
-
-#include <fe/assert.h>
+#include <utility>
 
 #include "let/ast.h"
 
@@ -26,7 +25,7 @@ uint64_t BinExpr::eval(Env& env) const {
         case Tag::O_sub: return l - r;
         case Tag::O_mul: return l * r;
         case Tag::O_div: return r ? l / r : 0; // div by zero = 0
-        default: fe::unreachable();
+        default: std::unreachable();
     }
 }
 
@@ -35,7 +34,7 @@ uint64_t UnaryExpr::eval(Env& env) const {
     switch (tag()) {
         case Tag::O_add: return r;
         case Tag::O_sub: return -r;
-        default: fe::unreachable();
+        default: std::unreachable();
     }
 }
 
