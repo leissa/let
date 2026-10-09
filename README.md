@@ -25,7 +25,7 @@ Options:
 Diagnostics:
       --loc-style <style>  How a diagnostic spells out a source location: `full`
                            (`path:row:col-row:col`), `rowcol` (`path:row:col`),
-                           `row` (`path:row`), or msvc (`path(row,col)`).
+                           `row` (`path:row`), or `msvc` (`path(row,col)`).
       --no-snippet         Does not render the offending source line and caret
                            underneath a diagnostic.
       --gutter <width>     Width of a diagnostic's line-number column. [default:
@@ -36,8 +36,6 @@ Diagnostics:
       --max-errors <num>   Maximum number of errors to report before dropping
                            the rest; `0` reports all of them. [default: `0`]
       --werror             Treats warnings as errors.
-
-Use "-" as `<file>` to output to stdout.
 ```
 
 ## Diagnostics

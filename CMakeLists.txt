@@ -57,12 +57,7 @@ target_link_libraries(let PRIVATE fe)
 # fe's project() only sets fe_VERSION within its own directory scope, so fetch it from there.
 get_directory_property(fe_version DIRECTORY submodules/fe DEFINITION fe_VERSION)
 target_compile_definitions(let PRIVATE LET_VERSION="${Let_VERSION}" FE_VERSION="${fe_version}")
-target_include_directories(let
-    PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
-target_compile_features(let PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
+target_include_directories(let PRIVATE include)
 
 install(TARGETS let RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/let")

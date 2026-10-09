@@ -69,12 +69,8 @@ AST<Expr> Parser::parse_primary_or_unary_expr(fe::Cite ctxt) {
         return expr;
     }
 
-    if (!ctxt.empty()) {
-        syntax_err("primary or unary expression", ctxt);
-        return ast<ErrExpr>(curr_);
-    }
-
-    fe::unreachable();
+    syntax_err("primary or unary expression", ctxt);
+    return ast<ErrExpr>(curr_);
 }
 
 /*

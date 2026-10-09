@@ -11,7 +11,6 @@ namespace let {
 
 using fe::Dbg;
 using fe::Loc;
-using fe::Pos;
 using fe::Sym;
 
 // clang-format off
@@ -20,7 +19,7 @@ using fe::Sym;
     m(K_print, "print") \
 
 #define LET_VAL(m)                        \
-    m(V_int,        "<interger literal>") \
+    m(V_int,        "<integer literal>")  \
     m(V_sym,        "<identifier>")       \
 
 #define LET_TOK(m)                   \
@@ -82,7 +81,6 @@ public:
     Loc loc() const { return loc_; }
     Tag tag() const { return tag_; }
     bool isa(Tag tag) const { return tag == tag_; }
-    bool isa_key() const { return tag_ != Tag::Nil && (int)tag_ <= Num_Keys; }
     explicit operator bool() const { return tag_ != Tag::Nil; }
 
     Sym sym() const {

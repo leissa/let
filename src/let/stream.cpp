@@ -4,8 +4,6 @@
 
 namespace let {
 
-// stream
-
 void Node::dump() const { stream(std::cout); }
 
 /*

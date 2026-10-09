@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cassert>
-
 #include <fe/lexer.h>
 
 #include "let/driver.h"

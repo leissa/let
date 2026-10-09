@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <format>
 #include <iostream>
 
@@ -33,14 +34,13 @@ int main(int argc, char** argv) {
             .opt(dump                   ,          "-d", "--dump"      , "Dumps the let program again.")
             .opt(eval                   ,          "-e", "--eval"      , "Evaluate the let program.")
             .grp("Diagnostics")
-            .opt(loc_style              , "style", ""  , "--loc-style" , "How a diagnostic spells out a source location: `full` (`path:row:col-row:col`), `rowcol` (`path:row:col`), `row` (`path:row`), or msvc (`path(row,col)`).")
+            .opt(loc_style              , "style", ""  , "--loc-style" , "How a diagnostic spells out a source location: `full` (`path:row:col-row:col`), `rowcol` (`path:row:col`), `row` (`path:row`), or `msvc` (`path(row,col)`).")
             .opt(driver.diag().no_snippet,         ""  , "--no-snippet", "Does not render the offending source line and caret underneath a diagnostic.")
             .opt(driver.diag().gutter   , "width", ""  , "--gutter"    , "Width of a diagnostic's line-number column.")
             .opt(driver.diag().max_rows , "num"  , ""  , "--max-rows"  , "Maximum number of rows a diagnostic's snippet renders before eliding its middle; `0` elides nothing.")
             .opt(driver.diag().max_errors,"num"  , ""  , "--max-errors", "Maximum number of errors to report before dropping the rest; `0` reports all of them.")
             .opt(driver.diag().werror   ,          ""  , "--werror"    , "Treats warnings as errors.")
-            .arg(input, "file", "Input file.")
-            .epilog("Use \"-\" as `<file>` to output to stdout.");
+            .arg(input, "file", "Input file.");
         // clang-format on
 
         if (auto err = cli.parse(argc, argv)) throw std::invalid_argument(*err);

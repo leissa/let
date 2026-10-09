@@ -26,7 +26,7 @@ private:
         return driver().ast<T>(std::forward<decltype(args)>(args)...);
     }
 
-    Dbg parse_sym(fe::Cite = {});
+    Dbg parse_sym(fe::Cite);
 
     AST<Expr> parse_expr(fe::Cite, Tok::Prec = Tok::Prec::Bottom);
     AST<Expr> parse_primary_or_unary_expr(fe::Cite);

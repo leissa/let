@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <fe/assert.h>
 
 #include "let/ast.h"
@@ -13,7 +15,7 @@ using Tag = Tok::Tag;
 // clang-format off
 uint64_t ErrExpr::eval(Env&) const { return 0; }
 uint64_t LitExpr::eval(Env&) const { return u64(); }
-uint64_t SymExpr::eval(Env& env) const { return env.emplace(sym(), 0).first->second;}
+uint64_t SymExpr::eval(Env& env) const { return env.emplace(sym(), 0).first->second; }
 // clang-format on
 
 uint64_t BinExpr::eval(Env& env) const {
@@ -41,10 +43,7 @@ uint64_t UnaryExpr::eval(Env& env) const {
  * Stmt
  */
 
-void LetStmt::eval(Env& env) const {
-    auto i     = init()->eval(env);
-    env[sym()] = i;
-}
+void LetStmt::eval(Env& env) const { env[sym()] = init()->eval(env); }
 
 void PrintStmt::eval(Env& env) const { std::cout << expr()->eval(env) << std::endl; }
 

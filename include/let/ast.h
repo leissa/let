@@ -21,7 +21,7 @@ template<class T> using View = fe::View<AST<T>>;   ///< Non-owning view of a nod
 using Env                    = fe::SymMap<uint64_t>;
 // clang-format on
 
-/// Base class for all @p Expr%essions.
+/// Base class for all AST nodes.
 /// @note No destructor, virtual or otherwise: the Arena reclaims every node at once.
 class Node : public fe::RuntimeCast<Node> {
 public:
