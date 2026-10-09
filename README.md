@@ -47,7 +47,7 @@ Each message prints the offending source row and underlines the columns the `fe:
 test/error/unclosed_paren.let:1:13: error: expected `)`, got `;` while parsing parenthesized expression
     1 | print (1 + 2;
       |             ^
-      test/error/unclosed_paren.let:1:7: note: unmatched `(` opened here
+      test/error/unclosed_paren.let:1:7: note: to match this `(`
     1 | print (1 + 2;
       |       ^
 ```

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <fe/parser.h>
-#include <fe/restore.h>
 
 #include "let/ast.h"
 #include "let/driver.h"
@@ -10,8 +9,6 @@
 namespace let {
 
 class Parser : public fe::Parser<Tok, Tok::Tag, 1, Parser> {
-    using Super = fe::Parser<Tok, Tok::Tag, 1, Parser>;
-
 public:
     Parser(Driver&, const fe::Src&);
 
@@ -34,14 +31,8 @@ private:
     AST<Stmt> parse_let_stmt();
     AST<Stmt> parse_print_stmt();
 
-    /// As fe::Parser::syntax_err but a missing `)` also gets a note pointing back at its `(`.
-    fe::Error& syntax_err(Expected, fe::Cite, Tok = {});
-
     Lexer lexer_;
     Sym error_;
-    Loc paren_l_; ///< The `(` currently being parenthesized; a missing `)` gets a note pointing back at it.
-
-    friend class fe::Parser<Tok, Tok::Tag, 1, Parser>;
 };
 
 } // namespace let

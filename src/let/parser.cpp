@@ -14,14 +14,6 @@ Parser::Parser(Driver& driver, const fe::Src& src)
     init();
 }
 
-fe::Error& Parser::syntax_err(Expected what, fe::Cite ctxt, Tok got) {
-    auto& err = Super::syntax_err(what, ctxt, got);
-    // The note drops itself again if paren_l_ is already covered by the error's own snippet.
-    if (what.tag == Tag::D_paren_r && paren_l_)
-        err.n(paren_l_, "unmatched `{}` opened here", Tok::tag2str(Tag::D_paren_l));
-    return err;
-}
-
 Dbg Parser::parse_sym(fe::Cite ctxt) {
     if (ahead().isa(Tag::V_sym)) return lex().dbg();
     syntax_err("identifier", ctxt);
