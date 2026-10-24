@@ -47,7 +47,7 @@ Tok Lexer::lex() {
                 continue;
             }
             if (accept('/')) {
-                while (ahead() != utf8::EoF && ahead() != '\n')
+                while (!eol())
                     next();
                 continue;
             }
