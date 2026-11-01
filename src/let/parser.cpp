@@ -14,9 +14,9 @@ Parser::Parser(Driver& driver, const fe::Src& src)
     init();
 }
 
-Dbg Parser::parse_sym(fe::Cite ctxt) {
+Dbg Parser::parse_sym(fe::Cite ctx) {
     if (ahead().isa(Tag::V_sym)) return lex().dbg();
-    syntax_err("identifier", ctxt);
+    syntax_err("identifier", ctx);
     return {ahead().loc(), error_};
 }
 
@@ -24,13 +24,13 @@ Dbg Parser::parse_sym(fe::Cite ctxt) {
  * Expr
  */
 
-AST<Expr> Parser::parse_expr(fe::Cite ctxt, Tok::Prec curr_prec) {
-    recover(Tag::D_paren_r, ctxt);
+AST<Expr> Parser::parse_expr(fe::Cite ctx, Tok::Prec curr_prec) {
+    recover(Tag::D_paren_r, ctx);
     auto track = tracker();
-    auto lhs   = parse_primary_or_unary_expr(ctxt);
+    auto lhs   = parse_primary_or_unary_expr(ctx);
 
     while (true) {
-        recover(Tag::D_paren_r, ctxt);
+        recover(Tag::D_paren_r, ctx);
         auto prec = Tok::bin_prec(ahead().tag());
         if (prec <= curr_prec) break;
         auto op  = lex().tag();
@@ -41,7 +41,7 @@ AST<Expr> Parser::parse_expr(fe::Cite ctxt, Tok::Prec curr_prec) {
     return lhs;
 }
 
-AST<Expr> Parser::parse_primary_or_unary_expr(fe::Cite ctxt) {
+AST<Expr> Parser::parse_primary_or_unary_expr(fe::Cite ctx) {
     switch (ahead().tag()) {
         case Tag::V_sym: return ast<SymExpr>(lex().dbg());
         case Tag::V_int: return ast<LitExpr>(lex());
@@ -61,7 +61,7 @@ AST<Expr> Parser::parse_primary_or_unary_expr(fe::Cite ctxt) {
         return expr;
     }
 
-    syntax_err("primary or unary expression", ctxt);
+    syntax_err("primary or unary expression", ctx);
     return ast<ErrExpr>(curr_);
 }
 
@@ -72,11 +72,11 @@ AST<Expr> Parser::parse_primary_or_unary_expr(fe::Cite ctxt) {
 AST<Stmt> Parser::parse_let_stmt() {
     auto track = tracker();
     eat(Tag::K_let);
-    auto dbg  = parse_sym("name of a let-statement");
-    auto ctxt = dbg.sym() == error_ ? fe::Cited("let-statement") : fe::format_cite("let-statement `{}`", dbg);
-    expect(Tag::T_ass, ctxt);
+    auto dbg = parse_sym("name of a let-statement");
+    auto ctx = dbg.sym() == error_ ? fe::Cited("let-statement") : fe::format_cite("let-statement `{}`", dbg);
+    expect(Tag::T_ass, ctx);
     auto init = parse_expr("initialization expression of a let-statement");
-    expect(Tag::T_semicolon, ctxt);
+    expect(Tag::T_semicolon, ctx);
     return ast<LetStmt>(track, dbg, init);
 }
 
