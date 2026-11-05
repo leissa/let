@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
         bool show_help = false, show_version = false, dump = false, eval = false;
         std::string input;
 
-        auto loc_style = [&](const std::string& t) -> std::string {
+        auto loc_style = [&](std::string_view t) -> std::string {
             // clang-format off
             if      (t == "full"  ) driver.diag().loc_style = fe::Loc::Style::Full;
             else if (t == "rowcol") driver.diag().loc_style = fe::Loc::Style::RowCol;
