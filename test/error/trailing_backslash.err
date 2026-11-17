@@ -1,0 +1,7 @@
+test/error/trailing_backslash.let:1:9: error: invalid input character `\`
+    1 | print 1 \
+      |         ^
+test/error/trailing_backslash.let:2:1-2:5: error: expected `;`, got `print` while parsing print-statement
+    2 | print 2;
+      | ^^^^^
+2 error(s) encountered
